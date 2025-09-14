@@ -20,6 +20,29 @@ const AI_STYLES = {
 
 // --- Helper Functions (Server-Side) ---
 
+// Helper function to safely encode state to Base64
+function encodeState(state) {
+    try {
+        const jsonString = JSON.stringify(state);
+        return Buffer.from(jsonString).toString('base64');
+    } catch (e) {
+        console.error("Failed to encode state:", e);
+        return '';
+    }
+}
+
+// Helper function to safely decode state from Base64
+function decodeState(token) {
+    try {
+        const jsonString = Buffer.from(token, 'base64').toString('utf-8');
+        return JSON.parse(jsonString);
+    } catch (e) {
+        console.error("Failed to decode token:", e);
+        return null;
+    }
+}
+
+
 function generateDynamicParams(styleKey) {
     const flexibilityFactors = { tough: 0.4, horseTrader: 0.6, fair: 0.8, key: 0.7, accommodating: 1.0 };
     const baseAiParams = {
@@ -46,17 +69,9 @@ function generateDynamicParams(styleKey) {
 }
 
 function isWithinZOPA(key, value, userReserve, aiReserve) {
-    // For cost, prepayment, duration: higher is better for user, lower for AI. User wants value >= userReserve. AI wants value <= aiReserve.
-    if (key === 'cost' || key === 'prepayment') {
+    if (key === 'cost' || key === 'prepayment' || key === 'duration') {
         return value >= userReserve && value <= aiReserve;
-    }
-    // For duration, user wants it longer (more time), but their reserve is shorter (min time). Let's assume lower is better for both to simplify.
-    // If user reserve is 240, expect is 330. If AI expect is 210, reserve is 270. ZOPA is [240, 270].
-    if (key === 'duration') {
-        return value >= userReserve && value <= aiReserve;
-    }
-    // For warranty, obligation: lower is better for user, higher for AI. User wants value <= userReserve. AI wants value >= aiReserve.
-    else {
+    } else {
         return value <= userReserve && value >= aiReserve;
     }
 }
@@ -83,20 +98,16 @@ function generateAiResponse(offer, gameState) {
 
     for (const key in offer) {
         const userValue = offer[key];
-        const aiExpect = aiParams[key].expect;
         const aiReserve = aiParams[key].reserve;
         let isPainful = false;
-        // Check if user's offer is beyond AI's reservation point
-        if (key === 'cost' || key === 'prepayment') { // Higher is worse for AI
+        if (key === 'cost' || key === 'prepayment' || key === 'duration') {
             if (userValue > aiReserve) isPainful = true;
-        } else if (key === 'duration') { // Higher is worse for AI
-             if (userValue > aiReserve) isPainful = true;
-        } else { // Lower is worse for AI
+        } else {
             if (userValue < aiReserve) isPainful = true;
         }
         
         if (isPainful) {
-            painPoints.push({ key, userValue, aiExpect, aiReserve });
+            painPoints.push({ key, userValue, aiExpect: aiParams[key].expect, aiReserve });
         }
     }
 
@@ -115,14 +126,14 @@ function generateAiResponse(offer, gameState) {
     }
 
     const responses = [
-        `關於<strong>${paramName}</strong>，您提出的 ${mainPainPoint.userValue} 條件，與我方的預期差距有點大。`,
-        `我理解您的立場，但在<strong>${paramName}</strong>這項上，我們恐怕無法接受 ${mainPainPoint.userValue} 這個數字。`,
-        `讓我們聚焦在<strong>${paramName}</strong>。您的方案和我們的目標 ${aiParams[mainPainPoint.key].expect} 還有一些距離。`,
+        `關於<strong>${paramName}</strong>，您提出的 ${mainPainPoint.userValue.toLocaleString()} 條件，與我方的預期差距有點大。`,
+        `我理解您的立場，但在<strong>${paramName}</strong>這項上，我們恐怕無法接受 ${mainPainPoint.userValue.toLocaleString()} 這個數字。`,
+        `讓我們聚焦在<strong>${paramName}</strong>。您的方案和我們的目標 ${aiParams[mainPainPoint.key].expect.toLocaleString()} 還有一些距離。`,
         `坦白說，<strong>${paramName}</strong>是我們比較關注的點，您提出的條件讓我們有些為難。`,
     ];
     
     if (gameState.consecutivePainPointCount >= 2) {
-        return `我們似乎在<strong>${paramName}</strong>上卡關了。這個條件 ${mainPainPoint.userValue} 對我們來說確實是個障礙，您能否在其他方面做些讓步來平衡一下？`;
+        return `我們似乎在<strong>${paramName}</strong>上卡關了。這個條件 ${mainPainPoint.userValue.toLocaleString()} 對我們來說確實是個障礙，您能否在其他方面做些讓步來平衡一下？`;
     }
 
     return responses[Math.floor(Math.random() * responses.length)];
@@ -165,7 +176,7 @@ function generateReportData(gameState, finalOffer, isSuccess) {
             <li>您共提出了 <strong>${stats.offers}</strong> 次方案。</li>
             <li>您查看了 <strong>${stats.batnaViews}</strong> 次 BATNA。</li>
         `,
-        satisfactionScoresHTML: isSuccess ? '評分功能開發中...' : '<li>用戶滿意度: --/10</li><li>AI 滿意度: --/10</li>',
+        satisfactionScoresHTML: isSuccess ? '<li>用戶滿意度: 計算中...</li><li>AI 滿意度: 計算中...</li>' : '<li>用戶滿意度: --/10</li><li>AI 滿意度: --/10</li>',
         smartTipsHTML: isSuccess
             ? `<p><strong>成交分析：</strong>您的方案滿足了業主 ${aiStyle.name} 風格的成交條件 (${aiStyle.desc})。</p>`
             : `<p><strong>破裂分析：</strong>您的最終方案未能滿足業主 ${aiStyle.name} 風格的成交條件 (${aiStyle.desc})。</p>`
@@ -175,7 +186,7 @@ function generateReportData(gameState, finalOffer, isSuccess) {
 
 // --- Cloudflare Function Handler ---
 
-async function handleRequest(request) {
+export const onRequest = async ({ request }) => {
     if (request.method !== 'POST') {
         return new Response('Method Not Allowed', { status: 405 });
     }
@@ -185,10 +196,9 @@ async function handleRequest(request) {
 
     let gameState;
     if (token) {
-        try {
-            gameState = JSON.parse(atob(token));
-        } catch (e) {
-            return new Response('Invalid token', { status: 400 });
+        gameState = decodeState(token);
+        if (!gameState) {
+             return new Response('Invalid token', { status: 400 });
         }
     }
 
@@ -218,7 +228,7 @@ async function handleRequest(request) {
             const responsePayload = {
                 aiStyleName: gameState.aiStyle.name,
                 leakedInfoHTML: leakText,
-                token: btoa(JSON.stringify(gameState)),
+                token: encodeState(gameState),
             };
             return new Response(JSON.stringify(responsePayload), { headers: { 'Content-Type': 'application/json' } });
         }
@@ -240,7 +250,7 @@ async function handleRequest(request) {
                 responsePayload = {
                     isDeal: false,
                     aiResponseHTML,
-                    token: btoa(JSON.stringify(gameState)), // Return updated state
+                    token: encodeState(gameState),
                 };
             }
             return new Response(JSON.stringify(responsePayload), { headers: { 'Content-Type': 'application/json' } });
@@ -257,7 +267,7 @@ async function handleRequest(request) {
         case 'viewBatna': {
             gameState.stats.batnaViews++;
             const responsePayload = {
-                token: btoa(JSON.stringify(gameState))
+                token: encodeState(gameState)
             };
             return new Response(JSON.stringify(responsePayload), { headers: { 'Content-Type': 'application/json' } });
         }
@@ -266,7 +276,3 @@ async function handleRequest(request) {
             return new Response('Invalid action', { status: 400 });
     }
 }
-
-export const onRequest = async ({ request }) => {
-    return handleRequest(request);
-};
