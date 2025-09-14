@@ -226,256 +226,160 @@ document.addEventListener('DOMContentLoaded', () => {
     const displays = {
         costValue: document.getElementById('cost-value'), durationValue: document.getElementById('duration-value'), warrantyValue: document.getElementById('warranty-value'), prepaymentValue: document.getElementById('prepayment-value'), obligationValue: document.getElementById('obligation-value'),
         obligationDescGame: document.getElementById('obligation-description-game'), obligationDefsStart: document.getElementById('obligation-definitions-start'), aiResponse: document.getElementById('ai-response'), aiStyleInfo: document.getElementById('ai-style-info'), aiLeakedInfo: document.getElementById('ai-leaked-info'),
-        resultSummary: document.getElementById('result-summary'), resultTitle: document.getElementById('result-title'), resultText: document.getElementById('result-text'), reportAiStyle: document.getElementById('report-ai-style'), reportTableBody: document.getElementById('report-table-body'),
+        resultTitle: document.getElementById('result-title'), resultText: document.getElementById('result-text'), reportAiStyle: document.getElementById('report-ai-style'), reportTableBody: document.getElementById('report-table-body'),
         dealZoneAnalysis: document.getElementById('deal-zone-analysis'), behaviorStats: document.getElementById('behavior-stats'), satisfactionScores: document.getElementById('satisfaction-scores'), smartTips: document.getElementById('smart-tips'),
         successModal: document.getElementById('success-modal'), modal: document.getElementById('modal'), modalTitle: document.getElementById('modal-title'), modalBody: document.getElementById('modal-body'),
-        startScreenLoader: document.getElementById('start-screen-loader'), startScreenContent: document.getElementById('start-screen-content'),
-        submitLoader: document.getElementById('submit-loader'), submitText: document.getElementById('submit-text')
     };
-
-    // --- Game State (Client-Side) ---
-    let gameState = {};
-    const OBLIGATION_LEVELS = { 1: '輕度義務', 2: '一般義務', 3: '中度義務', 4: '重度義務', 5: '全面義務' };
-    let obligationDescriptions = {};
-    const API_ENDPOINT = `${location.origin}/api/negotiate`;
-
-
-    async function init() {
-        showLoader(true);
-        switchScreen('start');
-        
+    
+    // --- Frontend State ---
+    let gameStateToken = null; // This token securely stores backend state
+    const OBLIGATION_LEVELS = { 1: { name: '輕度義務' }, 2: { name: '一般義務' }, 3: { name: '中度義務' }, 4: { name: '重度義務' }, 5: { name: '全面義務' } };
+    const OBLIGATION_DEFS = { 1: '配合標準審計流程，提供常規進度報告。', 2: '除標準報告外，需提供額外的專項報告（如環保、安全）。', 3: '需承擔與所有由業主直接指定的分包商的協調管理責任。', 4: '需承擔因非承包商原因導致的部分設計變更（累計不超過合約價5%）所引發的現場管理成本。', 5: '需承擔項目範圍內全部未知地質條件、以及因極端天氣導致的工期延誤風險。' };
+    
+    // --- API Communication ---
+    async function apiCall(action, payload = {}) {
         try {
-            const completedStyles = JSON.parse(sessionStorage.getItem('completedStyles') || '[]');
-            const response = await fetch(API_ENDPOINT, {
+            const response = await fetch('/api/negotiate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'init', completedStyles })
+                body: JSON.stringify({ action, ...payload }),
             });
-            if (!response.ok) throw new Error('無法初始化遊戲');
-            
-            const data = await response.json();
-            gameState = {
-                sessionId: data.sessionId,
-                stats: { offers: 0, batnaViews: 0 },
-                currentOffer: data.initialOffer
-            };
-            obligationDescriptions = data.startData.obligationLevels;
-            
-            setupStartScreen(data.startData);
-            setupSliders(data.initialOffer);
-            
+            if (!response.ok) throw new Error(`API Error: ${response.statusText}`);
+            return await response.json();
         } catch (error) {
-            console.error(error);
-            displays.startScreenContent.innerHTML = '<p class="text-center text-red-500">遊戲加載失敗，請刷新頁面重試。</p>';
-        } finally {
-            showLoader(false);
+            console.error('API call failed:', error);
+            alert('與伺服器通信失敗，請刷新頁面重試。');
+            return null;
         }
     }
 
-    function setupStartScreen(data) {
-        displays.aiStyleInfo.textContent = data.aiStyle.name;
-        displays.aiLeakedInfo.innerHTML = data.leakedInfo;
-        displays.obligationDefsStart.innerHTML = Object.entries(data.obligationLevels)
-            .map(([level, desc]) => `<p><span class="font-bold">等級 ${level} (${OBLIGATION_LEVELS[level]}):</span> ${desc}</p>`)
-            .join('');
-    }
-
-    function setupSliders(initialOffer) {
-        for (const key in inputs) {
-            inputs[key].value = initialOffer[key];
-            updateSliderValue(key, initialOffer[key]);
-        }
-    }
-
-    function showLoader(isLoading) {
-        if (isLoading) {
-            displays.startScreenLoader.classList.remove('hidden');
-            displays.startScreenContent.classList.add('hidden');
-        } else {
-            displays.startScreenLoader.classList.add('hidden');
-            displays.startScreenContent.classList.remove('hidden');
-            displays.startScreenContent.classList.add('space-y-6');
-        }
-    }
-    
-    function switchScreen(screenName) {
-        Object.values(screens).forEach(s => s.classList.remove('active'));
-        screens[screenName].classList.add('active');
-        window.scrollTo(0, 0);
-    }
-    
-    function showModal(title, bodyHTML) {
-        displays.modalTitle.textContent = title;
-        displays.modalBody.innerHTML = bodyHTML;
-        displays.modal.classList.remove('hidden');
-        setTimeout(() => {
-            displays.modal.style.opacity = '1';
-            displays.modal.querySelector('.modal-content').style.transform = 'scale(1)';
-            displays.modal.querySelector('.modal-content').style.opacity = '1';
-        }, 10);
-    }
-
-    function hideModal() {
-        displays.modal.style.opacity = '0';
-        displays.modal.querySelector('.modal-content').style.transform = 'scale(0.95)';
-        displays.modal.querySelector('.modal-content').style.opacity = '0';
-        setTimeout(() => { displays.modal.classList.add('hidden'); }, 300);
-    }
-
+    // --- UI Functions ---
+    function switchScreen(screenName) { Object.values(screens).forEach(s => s.classList.remove('active')); screens[screenName].classList.add('active'); }
+    function showModal(title, bodyHTML) { displays.modal.classList.remove('hidden'); displays.modal.classList.add('flex'); displays.modalTitle.textContent = title; displays.modalBody.innerHTML = bodyHTML; setTimeout(() => { displays.modal.querySelector('.modal-content').classList.add('scale-100', 'opacity-100'); displays.modal.classList.add('opacity-100'); }, 10); }
+    function hideModal() { displays.modal.querySelector('.modal-content').classList.remove('scale-100', 'opacity-100'); displays.modal.classList.remove('opacity-100'); setTimeout(() => displays.modal.classList.add('hidden'), 300); }
     function updateSliderValue(key, value) {
         let displayValue = value;
-        if (key === 'cost') displayValue = parseInt(value).toLocaleString();
-        else if (key === 'obligation') {
-            displayValue = `${value} (${OBLIGATION_LEVELS[value]})`;
-            if (obligationDescriptions && obligationDescriptions[value]) {
-                 displays.obligationDescGame.textContent = obligationDescriptions[value];
+        if (key === 'cost') {
+            displayValue = parseInt(value).toLocaleString();
+        } else if (key === 'obligation') {
+            // This is the line that was causing the error. We ensure OBLIGATION_LEVELS exists.
+            if (OBLIGATION_LEVELS && OBLIGATION_LEVELS[value]) {
+                displayValue = `${value} (${OBLIGATION_LEVELS[value].name})`;
+                displays.obligationDescGame.textContent = `等級 ${value}: ${OBLIGATION_DEFS[value]}`;
             }
         }
         displays[`${key}Value`].textContent = displayValue;
     }
-    
-    async function handleSubmitOffer() {
-        buttons.submitOffer.disabled = true;
-        displays.submitText.classList.add('hidden');
-        displays.submitLoader.classList.remove('hidden');
-
-        gameState.stats.offers++;
-        gameState.currentOffer = Object.fromEntries(Object.entries(inputs).map(([key, input]) => [key, parseInt(input.value)]));
-
-        try {
-            const response = await fetch(API_ENDPOINT, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'submit', sessionId: gameState.sessionId, offer: gameState.currentOffer, stats: gameState.stats })
-            });
-            if (!response.ok) throw new Error('提交失敗');
-            
-            const data = await response.json();
-            
-            if (data.deal) {
-                showSuccessAndReport(data.report);
-            } else {
-                displays.aiResponse.innerHTML = data.aiResponse;
-                if (data.aiCounterOffer) {
-                    setTimeout(() => {
-                        Object.entries(data.aiCounterOffer).forEach(([key, value]) => {
-                            inputs[key].value = value;
-                            updateSliderValue(key, value);
-                        });
-                    }, 1000);
-                }
-            }
-        } catch (error) {
-            displays.aiResponse.textContent = '與伺服器通信失敗，請稍後再試。';
-        } finally {
-            buttons.submitOffer.disabled = false;
-            displays.submitText.classList.remove('hidden');
-            displays.submitLoader.classList.add('hidden');
+    function toggleButtonLoading(button, isLoading) {
+        if (isLoading) {
+            button.disabled = true;
+            button.dataset.originalText = button.innerHTML;
+            button.innerHTML = `<div class="loading-spinner"></div><span>處理中...</span>`;
+        } else {
+            button.disabled = false;
+            button.innerHTML = button.dataset.originalText;
         }
+    }
+    
+    // --- Game Logic Flow ---
+    async function init() {
+        switchScreen('start');
+        buttons.startGame.disabled = true;
+        buttons.startGame.textContent = '正在載入...';
+        
+        const data = await apiCall('init');
+        if (data) {
+            gameStateToken = data.token;
+            displays.aiStyleInfo.textContent = data.aiStyleName;
+            displays.aiLeakedInfo.innerHTML = data.leakedInfoHTML;
+            buttons.startGame.disabled = false;
+            buttons.startGame.textContent = '開始談判';
+        }
+
+        displays.obligationDefsStart.innerHTML = Object.entries(OBLIGATION_DEFS).map(([i, desc]) => `<p><span class="font-bold">等級 ${i} (${OBLIGATION_LEVELS[i].name}):</span> ${desc}</p>`).join('');
+        
+        for (const key in inputs) {
+            updateSliderValue(key, inputs[key].value);
+        }
+        displays.aiResponse.innerHTML = '等待您提交第一個方案...';
+    }
+
+    async function handleSubmitOffer() {
+        toggleButtonLoading(buttons.submitOffer, true);
+        const offer = Object.fromEntries(Object.entries(inputs).map(([key, input]) => [key, parseInt(input.value)]));
+        
+        const data = await apiCall('submit', { token: gameStateToken, offer });
+        
+        if (data) {
+            gameStateToken = data.token; // Update token for next round
+            if (data.isDeal) {
+                showSuccessAndReport(data.reportData);
+            } else {
+                displays.aiResponse.innerHTML = data.aiResponseHTML;
+            }
+        }
+        toggleButtonLoading(buttons.submitOffer, false);
     }
 
     function showSuccessAndReport(reportData) {
         displays.successModal.classList.remove('hidden');
+        displays.successModal.classList.add('flex');
+        setTimeout(() => { 
+            displays.successModal.querySelector('div').classList.add('scale-100', 'opacity-100');
+        }, 10);
+        
         setTimeout(() => {
-            displays.successModal.classList.add('hidden');
-            showReport(true, reportData);
+            displays.successModal.querySelector('div').classList.remove('scale-100', 'opacity-100');
+            setTimeout(() => {
+                displays.successModal.classList.add('hidden');
+                displays.successModal.classList.remove('flex');
+                renderReport(reportData);
+            }, 300);
         }, 2500);
     }
-
-    function showReport(isSuccess, reportData) {
-        // Update session storage with completed style
-        if (isSuccess) {
-            let completed = JSON.parse(sessionStorage.getItem('completedStyles') || '[]');
-            if (!completed.includes(reportData.aiStyle.key)) {
-                completed.push(reportData.aiStyle.key);
-                sessionStorage.setItem('completedStyles', JSON.stringify(completed));
-            }
+    
+    async function handleEndNegotiation() {
+        const reportData = await apiCall('end', { token: gameStateToken });
+        if(reportData) {
+            renderReport(reportData);
         }
+    }
 
-        // --- Populate Header ---
-        displays.resultSummary.className = `p-6 rounded-lg shadow-md text-center ${isSuccess ? 'bg-green-100 border-green-500' : 'bg-red-100 border-red-500'} border-2`;
-        displays.resultTitle.className = `text-4xl font-bold mb-2 ${isSuccess ? 'text-green-700' : 'text-red-700'}`;
-        displays.resultTitle.textContent = isSuccess ? '談判成功！' : '談判破裂';
-        displays.resultText.textContent = isSuccess ? '恭喜您，雙方已達成協議。' : '很遺憾，雙方未能達成一致。';
-        displays.reportAiStyle.textContent = reportData.aiStyle.name;
-
-        // --- Populate Table ---
-        displays.reportTableBody.innerHTML = '';
-        const paramOrder = ['cost', 'duration', 'warranty', 'prepayment', 'obligation'];
-        paramOrder.forEach(key => {
-            const formatValue = (k, v) => {
-                if (v === undefined || v === null) return '-';
-                if (k === 'cost') return v.toLocaleString();
-                if (k === 'obligation') return `${v} (${OBLIGATION_LEVELS[v]})`;
-                if (k === 'prepayment') return `${v}%`;
-                return v;
-            };
-            const row = document.createElement('tr');
-            row.className = 'border-b';
-            row.innerHTML = `
-                <td class="p-3 font-medium">${reportData.params.user[key].name}</td>
-                <td class="p-3 font-bold text-sky-700">${formatValue(key, reportData.finalOffer[key])}</td>
-                <td class="p-3 text-green-600">${formatValue(key, reportData.params.user[key].expect)}</td>
-                <td class="p-3 text-red-600">${formatValue(key, reportData.params.user[key].reserve)}</td>
-                <td class="p-3 text-red-600">${formatValue(key, reportData.params.ai[key].reserve)}</td>
-                <td class="p-3 text-green-600">${formatValue(key, reportData.params.ai[key].expect)}</td>
-            `;
-            displays.reportTableBody.appendChild(row);
-        });
-
-        // --- Deal Zone Analysis ---
-        let analysisHTML = `<p class="mb-4">${reportData.aiStyle.desc}</p><ul class="space-y-2">`;
-        paramOrder.forEach(key => {
-            const isInZOPA = reportData.zopaStatus[key];
-            analysisHTML += `<li class="flex justify-between items-center p-2 rounded-md ${isInZOPA ? 'bg-green-50' : 'bg-red-50'}">
-                <span>${reportData.params.user[key].name}</span>
-                <span class="font-bold ${isInZOPA ? 'text-green-600' : 'text-red-600'}">${isInZOPA ? '✓ 在成交區間內' : '✗ 在成交區間外'}</span>
-            </li>`;
-        });
-        analysisHTML += `</ul><p class="text-center mt-4 font-semibold">達成 ZOPA 的維度數量: ${reportData.zopaCount}</p>`;
-        displays.dealZoneAnalysis.innerHTML = analysisHTML;
-
-        // --- Behavior Stats ---
-        displays.behaviorStats.innerHTML = `<li class="flex justify-between"><span>方案提交次數:</span><span class="font-bold">${reportData.stats.offers}</span></li><li class="flex justify-between"><span>查看 BATNA 次數:</span><span class="font-bold">${reportData.stats.batnaViews}</span></li>`;
-
-        // --- Satisfaction Scores ---
-        displays.satisfactionScores.innerHTML = `
-            <div class="flex justify-between items-center"><span>您的滿意度:</span><span class="font-bold text-lg text-sky-600">${reportData.satisfaction.user} / 10</span></div>
-            <div class="flex justify-between items-center"><span>業主滿意度:</span><span class="font-bold text-lg text-red-600">${reportData.satisfaction.ai} / 10</span></div>
-        `;
-        
-        // --- Smart Tips ---
-        displays.smartTips.innerHTML = reportData.smartTips.map(tip => `<p>• ${tip}</p>`).join('');
-
+    function renderReport(data) {
+        displays.resultTitle.textContent = data.isSuccess ? '談判成功！' : '談判破裂';
+        displays.resultTitle.className = data.isSuccess ? 'text-4xl font-bold mb-2 text-green-600' : 'text-4xl font-bold mb-2 text-red-600';
+        displays.resultText.textContent = data.resultText;
+        displays.reportAiStyle.textContent = data.aiStyleName;
+        displays.reportTableBody.innerHTML = data.reportTableHTML;
+        displays.dealZoneAnalysis.innerHTML = data.dealZoneAnalysisHTML;
+        displays.behaviorStats.innerHTML = data.behaviorStatsHTML;
+        displays.satisfactionScores.innerHTML = data.satisfactionScoresHTML;
+        displays.smartTips.innerHTML = data.smartTipsHTML;
         switchScreen('report');
     }
 
     // --- Event Listeners ---
     buttons.startGame.addEventListener('click', () => switchScreen('game'));
     buttons.submitOffer.addEventListener('click', handleSubmitOffer);
-    
-    buttons.endNegotiation.addEventListener('click', async () => {
-        const currentOffer = Object.fromEntries(Object.entries(inputs).map(([key, input]) => [key, parseInt(input.value)]));
-        const response = await fetch(API_ENDPOINT, {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'end', sessionId: gameState.sessionId, offer: currentOffer, stats: gameState.stats })
-        });
-        const reportData = await response.json();
-        showReport(false, reportData);
-    });
-
+    buttons.endNegotiation.addEventListener('click', handleEndNegotiation);
     buttons.playAgain.addEventListener('click', init);
-    
     buttons.viewBatna.addEventListener('click', () => {
-        gameState.stats.batnaViews++;
-        showModal('您的 BATNA (最佳替代方案)', `<p class="font-semibold">接受另一個住宅項目合約：</p><ul class="list-disc list-inside mt-2"><li>報價: 9,500,000 元</li><li>工期: 300 天</li><li>保修期: 2 年</li><li>預付款: 15%</li><li>附加義務: 等級 2 (一般義務)</li></ul>`);
+        apiCall('viewBatna', { token: gameStateToken }).then(data => { if(data) gameStateToken = data.token; });
+        const batnaHTML = `
+            <p class="font-bold">您的最佳替代方案是一個住宅項目合約，其價值可量化為：</p>
+            <ul class="list-disc list-inside mt-2 space-y-1 text-slate-700">
+                <li><strong>報價:</strong> 9,500,000 元</li>
+                <li><strong>工期:</strong> 300 天</li>
+                <li><strong>保修期:</strong> 2 年</li>
+                <li><strong>預付款:</strong> 15%</li>
+                <li><strong>附加義務:</strong> 等級 2 (一般義務)</li>
+            </ul>
+            <p class="mt-4 text-sm bg-amber-100 p-2 rounded">當前談判的條件若劣於此方案，您應當選擇放棄。</p>
+        `;
+        showModal('您的 BATNA (最佳替代方案)', batnaHTML);
     });
-
     buttons.modalClose.addEventListener('click', hideModal);
-
-    Object.entries(inputs).forEach(([key, input]) => {
-        input.addEventListener('input', (e) => updateSliderValue(key, e.target.value));
-    });
+    Object.entries(inputs).forEach(([key, input]) => input.addEventListener('input', (e) => updateSliderValue(key, e.target.value)));
 
     // --- Initial Load ---
     init();
@@ -483,4 +387,5 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
 
