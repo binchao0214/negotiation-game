@@ -50,7 +50,7 @@ const GAME_THEMES = {
             officialAiOpponentName: 'HR (AI) 回應', en_officialAiOpponentName: 'HR (AI) Response',
             obligationTitle: '專案主導權等級定義', en_obligationTitle: 'Project Autonomy Level Definitions',
             successModalTitle: '談成了！', en_successModalTitle: 'Deal!',
-            successModalText: '恭喜你，被項目套牢了！', en_successModalText: 'Congratulations, you\'re locked into the project!',
+            successModalText: '恭喜你，好好努力加油，别被套牢了！', en_successModalText: 'Congratulations, work hard and don\'t get trapped!',
             reportTableHead: '<tr><th class="p-3">參數<p class="en-text font-normal">Parameter</p></th><th class="p-3 text-sky-600">您的最終方案<p class="en-text font-normal">Your Final Offer</p></th><th class="p-3 text-green-600">您的期望<p class="en-text font-normal">Your Expectation</p></th><th class="p-3 text-red-600">您的底線<p class="en-text font-normal">Your Reserve</p></th><th class="p-3 text-red-600">對方底線<p class="en-text font-normal">Opponent\'s Reserve</p></th><th class="p-3 text-green-600">對方期望<p class="en-text font-normal">Opponent\'s Expectation</p></th></tr>',
             finalSummaryTableHead: '<tr><th class="p-3">HR 談判風格<p class="en-text font-normal">Style</p></th><th class="p-3">結果<p class="en-text font-normal">Result</p></th><th class="p-3">Offer 內容<p class="en-text font-normal">Offer Terms</p></th><th class="p-3">對話輪次<p class="en-text font-normal">Rounds</p></th><th class="p-3">BATNA 查看<p class="en-text font-normal">BATNA Views</p></th><th class="p-3">過度讓步<p class="en-text font-normal">Over-concessions</p></th><th class="p-3">非理性思考<p class="en-text font-normal">Irrational Moves</p></th><th class="p-3">您的滿意度<p class="en-text font-normal">Your Score</p></th><th class="p-3">HR 滿意度<p class="en-text font-normal">HR\'s Score</p></th></tr>',
             DISCUSSION_QUESTIONS: `
@@ -118,7 +118,7 @@ const GAME_THEMES = {
             officialAiOpponentName: '業主 (AI) 回應', en_officialAiOpponentName: 'Client (AI) Response',
             obligationTitle: '附加義務等級定義', en_obligationTitle: 'Obligation Level Definitions',
             successModalTitle: '談成了！', en_successModalTitle: 'Deal!',
-            successModalText: '恭喜你，被項目套牢了！', en_successModalText: 'Congratulations, you\'re locked into the project!',
+            successModalText: '恭喜你，好好努力加油，别被套牢了！', en_successModalText: 'Congratulations, work hard and don\'t get trapped!',
             reportTableHead: '<tr><th class="p-3">參數<p class="en-text font-normal">Parameter</p></th><th class="p-3 text-sky-600">您的最終方案<p class="en-text font-normal">Your Final Offer</p></th><th class="p-3 text-green-600">您的期望<p class="en-text font-normal">Your Expectation</p></th><th class="p-3 text-red-600">您的底線<p class="en-text font-normal">Your Reserve</p></th><th class="p-3 text-red-600">業主底線<p class="en-text font-normal">Client\'s Reserve</p></th><th class="p-3 text-green-600">業主期望<p class="en-text font-normal">Client\'s Expectation</p></th></tr>',
             finalSummaryTableHead: '<tr><th class="p-3">談判風格<p class="en-text font-normal">Style</p></th><th class="p-3">結果<p class="en-text font-normal">Result</p></th><th class="p-3">成交方案<p class="en-text font-normal">Deal Terms</p></th><th class="p-3">對話輪次<p class="en-text font-normal">Rounds</p></th><th class="p-3">BATNA 查看<p class="en-text font-normal">BATNA Views</p></th><th class="p-3">過度讓步<p class="en-text font-normal">Over-concessions</p></th><th class="p-3">非理性思考<p class="en-text font-normal">Irrational Moves</p></th><th class="p-3">您的滿意度<p class="en-text font-normal">Your Score</p></th><th class="p-3">業主滿意度<p class="en-text font-normal">Client\'s Score</p></th></tr>',
             DISCUSSION_QUESTIONS: `
@@ -398,7 +398,7 @@ const handleAction = {
         if (!gameState && theme) {
             gameState = { theme, gameHistory: [], completedStyles: [] };
         } else if (!gameState) {
-            return { error: "Invalid state: No token or theme provided for initialization." };
+            return { error: "Invalid state", details: "No token or theme provided for initialization." };
         }
         
         const THEME_DATA = GAME_THEMES[gameState.theme];
@@ -560,3 +560,4 @@ export const onRequest = async ({ request }) => {
         return new Response(JSON.stringify({ error: 'Internal Server Error', details: error.message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
     }
 };
+
