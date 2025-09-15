@@ -82,6 +82,7 @@
                             <tr>
                                 <th class="p-3">談判風格</th>
                                 <th class="p-3">結果</th>
+                                <th class="p-3">對話輪次</th>
                                 <th class="p-3">您的滿意度</th>
                                 <th class="p-3">業主滿意度</th>
                             </tr>
@@ -100,7 +101,6 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    // --- DOM Elements ---
     const screens = { start: document.getElementById('start-screen'), game: document.getElementById('game-screen'), report: document.getElementById('report-screen'), finalSummary: document.getElementById('final-summary-screen') };
     const buttons = { startGame: document.getElementById('start-game-btn'), submitOffer: document.getElementById('submit-offer-btn'), endNegotiation: document.getElementById('end-negotiation-btn'), viewBatna: document.getElementById('view-batna-btn'), nextRound: document.getElementById('next-round-btn'), viewSummary: document.getElementById('view-summary-btn'), restartSeries: document.getElementById('restart-series-btn'), modalClose: document.getElementById('modal-close-btn') };
     const inputs = { cost: document.getElementById('cost'), duration: document.getElementById('duration'), warranty: document.getElementById('warranty'), prepayment: document.getElementById('prepayment'), obligation: document.getElementById('obligation') };
@@ -114,31 +114,23 @@ document.addEventListener('DOMContentLoaded', () => {
         finalSummaryTableBody: document.getElementById('final-summary-table-body'),
     };
     
-    // --- Frontend State ---
     let gameStateToken = null;
     const OBLIGATION_LEVELS = { 1: { name: '輕度義務' }, 2: { name: '一般義務' }, 3: { name: '中度義務' }, 4: { name: '重度義務' }, 5: { name: '全面義務' } };
     const OBLIGATION_DEFS = { 1: '配合標準審計流程，提供常規進度報告。', 2: '除標準報告外，需提供額外的專項報告（如環保、安全）。', 3: '需承擔與所有由業主直接指定的分包商的協調管理責任。', 4: '需承擔因非承包商原因導致的部分設計變更（累計不超過合約價5%）所引發的現場管理成本。', 5: '需承擔項目範圍內全部未知地質條件、以及因極端天氣導致的工期延誤風險。' };
     
-    // --- API Communication ---
     async function apiCall(action, payload = {}) {
         try {
-            // FIX: Revert to a standard relative path, which is correct for deployment.
-            // Added a content-type check to provide better error messages in non-production environments.
             const response = await fetch('/api/negotiate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action, ...payload }),
             });
-
             const contentType = response.headers.get("content-type");
             if (!contentType || !contentType.includes("application/json")) {
                  throw new Error("伺服器返回了無效的回應格式(不是JSON)。這很可能是因為預覽環境無法執行後端程式碼，請在部署後測試。");
             }
-
             const data = await response.json();
-            if (!response.ok) {
-                throw new Error(data.details || `伺服器錯誤: ${response.status}`);
-            }
+            if (!response.ok) throw new Error(data.details || `伺服器錯誤: ${response.status}`);
             return data;
         } catch (error) {
             console.error('API call failed:', error);
@@ -147,7 +139,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- UI Functions ---
     function switchScreen(screenName) { Object.values(screens).forEach(s => s.classList.remove('active')); screens[screenName].classList.add('active'); }
     function showModal(title, bodyHTML) { displays.modal.classList.remove('hidden'); displays.modal.classList.add('flex'); displays.modalTitle.textContent = title; displays.modalBody.innerHTML = bodyHTML; setTimeout(() => { if (displays.modal.querySelector('.modal-content')) displays.modal.querySelector('.modal-content').classList.remove('scale-95', 'opacity-0'); }, 10); }
     function hideModal() { if (displays.modal.querySelector('.modal-content')) displays.modal.querySelector('.modal-content').classList.add('scale-95', 'opacity-0'); setTimeout(() => {displays.modal.classList.add('hidden'); displays.modal.classList.remove('flex');}, 300); }
@@ -160,7 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 displays.obligationDescGame.textContent = `等級 ${value}: ${OBLIGATION_DEFS[value]}`;
             }
         }
-        if (displays[`${key}Value`]) { displays[`${key}Value`].textContent = displayValue; }
+        if (displays[`${key}Value`]) displays[`${key}Value`].textContent = displayValue;
     }
     function toggleButtonLoading(button, isLoading) {
         if (!button) return;
@@ -174,7 +165,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
-    // --- Game Logic Flow ---
     async function init(token = null) {
         switchScreen('start');
         toggleButtonLoading(buttons.startGame, true);
@@ -198,7 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
             toggleButtonLoading(buttons.startGame, false);
             buttons.startGame.textContent = '開始談判';
         } else {
-            // Handle error...
+            // Error handled in apiCall
         }
 
         displays.obligationDefsStart.innerHTML = Object.entries(OBLIGATION_DEFS).map(([i, desc]) => `<p><span class="font-bold">等級 ${i} (${OBLIGATION_LEVELS[i].name}):</span> ${desc}</p>`).join('');
@@ -241,7 +231,10 @@ document.addEventListener('DOMContentLoaded', () => {
     async function handleEndNegotiation() {
         const offer = Object.fromEntries(Object.entries(inputs).map(([key, input]) => [key, parseInt(input.value)]));
         const data = await apiCall('end', { token: gameStateToken, offer });
-        if (data) renderReport(data);
+        if (data) {
+             gameStateToken = data.token;
+             renderReport(data.reportData);
+        }
     }
 
     function renderReport(data) {
@@ -275,6 +268,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return `<tr class="border-b">
                 <td class="p-3 font-medium">${round.styleName}</td>
                 <td class="p-3 font-bold ${resultClass}">${round.isSuccess ? '談成' : '破裂'}</td>
+                <td class="p-3 text-center">${round.offersSubmitted}</td>
                 <td class="p-3">${userScore}</td>
                 <td class="p-3">${aiScore}</td>
             </tr>`;
@@ -282,7 +276,6 @@ document.addEventListener('DOMContentLoaded', () => {
         switchScreen('finalSummary');
     }
 
-    // --- Event Listeners ---
     buttons.startGame.addEventListener('click', () => switchScreen('game'));
     buttons.submitOffer.addEventListener('click', handleSubmitOffer);
     buttons.endNegotiation.addEventListener('click', handleEndNegotiation);
