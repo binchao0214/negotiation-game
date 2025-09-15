@@ -74,13 +74,28 @@ function checkDealCondition(offer, aiStyleKey, aiParams) {
 function generateAiResponse(offer, gameState) {
     const { aiParams } = gameState;
     const painPoints = [];
+    // A pain point for the AI is when the user's offer is WORSE for the AI than its reserve value.
     for (const key in offer) {
-        if (!isWithinZOPA(key, offer[key], BASE_PARAMS.user[key].reserve, aiParams[key].reserve)) {
-            painPoints.push({ key, userValue: offer[key] });
+        const userValue = offer[key];
+        const aiReserve = aiParams[key].reserve;
+        let isPainful = false;
+        
+        // Higher is worse for AI
+        if (key === 'cost' || key === 'duration') {
+             if (userValue > aiReserve) isPainful = true;
+        // Lower is worse for AI
+        } else { // warranty, prepayment, obligation
+             if (userValue < aiReserve) isPainful = true;
+        }
+
+        if(isPainful) {
+            painPoints.push({ key, userValue });
         }
     }
 
-    if (painPoints.length === 0) { return `這個方案看起來有誠意，我們正在接近達成共識。但在總體利益上，我方還需要再評估一下，才能完全同意。<p class="en-text">This offer shows sincerity, and we are getting close to a consensus. However, I need to re-evaluate the overall benefits for our side.</p>`; }
+    if (painPoints.length === 0) { 
+        return `這個方案看起來有誠意，我們正在接近達成共識。但在總體利益上，我方還需要再評估一下，才能完全同意。<p class="en-text">This offer shows sincerity, and we are getting close to a consensus. However, I need to re-evaluate the overall benefits for our side.</p>`; 
+    }
     
     const mainPainPoint = painPoints[Math.floor(Math.random() * painPoints.length)];
     const param = aiParams[mainPainPoint.key];
@@ -159,6 +174,7 @@ function generateReportData(gameState, finalOffer, isSuccess) {
         styleName: aiStyle.name, en_styleName: aiStyle.en_name,
         isSuccess, satisfaction,
         offersSubmitted: stats.offers, batnaViews: stats.batnaViews,
+        irrationalMoves: stats.irrationalMoves,
         finalOffer: isSuccess ? finalOffer : null
     };
     const updatedGameHistory = [...gameHistory, currentRoundHistory];
@@ -233,7 +249,7 @@ const handleAction = {
         const randomStyleKey = availableStyles[Math.floor(Math.random() * availableStyles.length)];
         
         let gameState = {
-            stats: { offers: 0, batnaViews: 0 },
+            stats: { offers: 0, batnaViews: 0, irrationalMoves: 0 },
             lastPainPoint: null, consecutivePainPointCount: 0,
             completedStyles: completedStyles, gameHistory: gameHistory
         };
@@ -292,6 +308,10 @@ const handleAction = {
     },
     'viewBatna': (gameState) => {
         gameState.stats.batnaViews++;
+        return { token: encodeState(gameState) };
+    },
+    'irrationalMove': (gameState) => {
+        gameState.stats.irrationalMoves++;
         return { token: encodeState(gameState) };
     }
 };
