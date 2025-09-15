@@ -162,11 +162,6 @@ export const onRequest = async ({ request }) => {
         gameState = decodeState(token);
     }
 
-    // This is the new robust check to prevent crashes
-    if (action !== 'init' && (!gameState || !gameState.stats || !gameState.aiStyle || !gameState.aiParams)) {
-        return new Response(JSON.stringify({ error: "Invalid or missing game state token." }), { status: 400, headers: { 'Content-Type': 'application/json' } });
-    }
-
     switch (action) {
         case 'init': {
             gameState = {
@@ -196,6 +191,9 @@ export const onRequest = async ({ request }) => {
             return new Response(JSON.stringify(responsePayload), { headers: { 'Content-Type': 'application/json' } });
         }
         case 'submit': {
+             if (!gameState) {
+                return new Response(JSON.stringify({ error: "Game state is missing, please initialize first." }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+            }
             if (!offer) {
                  return new Response(JSON.stringify({ error: "Offer data is missing in submit action." }), { status: 400, headers: { 'Content-Type': 'application/json' } });
             }
@@ -218,6 +216,9 @@ export const onRequest = async ({ request }) => {
             return new Response(JSON.stringify(responsePayload), { headers: { 'Content-Type': 'application/json' } });
         }
         case 'end': {
+             if (!gameState) {
+                return new Response(JSON.stringify({ error: "Game state is missing, please initialize first." }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+            }
             const finalOffer = offer || Object.fromEntries(
                 Object.keys(BASE_PARAMS.user).map(key => [key, BASE_PARAMS.user[key].expect])
             );
@@ -225,6 +226,9 @@ export const onRequest = async ({ request }) => {
             return new Response(JSON.stringify(reportData), { headers: { 'Content-Type': 'application/json' } });
         }
         case 'viewBatna': {
+             if (!gameState) {
+                return new Response(JSON.stringify({ error: "Game state is missing, please initialize first." }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+            }
             gameState.stats.batnaViews++;
             const responsePayload = {
                 token: encodeState(gameState)
