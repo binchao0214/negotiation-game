@@ -327,10 +327,14 @@ document.addEventListener('DOMContentLoaded', () => {
     function hideModal() { if (displays.modal.querySelector('.modal-content')) displays.modal.querySelector('.modal-content').classList.add('scale-95', 'opacity-0'); setTimeout(() => {displays.modal.classList.add('hidden'); displays.modal.classList.remove('flex');}, 300); }
     function updateSliderValue(key, value) {
         const label = document.querySelector(`label[for="${key}"] span`);
-        if(label) label.innerHTML = `${label.dataset.name} (${label.dataset.enName})`;
+        if(label && label.dataset.name && label.dataset.enName) {
+            label.innerHTML = `${label.dataset.name} (${label.dataset.enName})`;
+        }
 
         let displayValue = value;
-        if (key === 'cost' || key === 'prepayment') { displayValue = parseInt(value).toLocaleString(); } 
+        if (key === 'cost' || (key === 'prepayment' && (gameStateToken && decodeState(gameStateToken)?.identity !== 'general'))) { 
+            displayValue = parseInt(value).toLocaleString(); 
+        } 
         else if (key === 'obligation') {
             if (OBLIGATION_LEVELS[value]) {
                 displayValue = `${value} (${OBLIGATION_LEVELS[value].name} / ${OBLIGATION_LEVELS[value].en_name})`;
@@ -580,7 +584,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     buttons.modalClose.addEventListener('click', hideModal);
     Object.entries(inputs).forEach(([key, input]) => { if (input) input.addEventListener('input', (e) => updateSliderValue(key, e.target.value)); });
-
 });
 </script>
 
