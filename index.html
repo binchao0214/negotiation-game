@@ -133,16 +133,16 @@
                     <div id="scene-user-batna" class="bg-amber-100 border-l-4 border-amber-500 text-amber-800 p-4 rounded-r-lg"></div>
                 </div>
             </div>
-            <div class="bg-white p-6 rounded-lg shadow-md">
+            <div id="definitions-box" class="bg-white p-6 rounded-lg shadow-md">
                 <h3 class="text-xl font-bold mb-1">談判變數定義</h3>
                 <p class="en-text -mt-1 mb-4">Parameter Definitions</p>
-                <div id="obligation-definitions-start" class="text-sm space-y-2 text-slate-600"></div>
+                <div id="definitions-content" class="text-sm space-y-2 text-slate-600"></div>
             </div>
             <div class="bg-white p-6 rounded-lg shadow-md">
                 <h2 class="text-2xl font-bold mb-1 text-center">開局信息</h2>
                 <p class="en-text text-center -mt-1 mb-4">Initial Information</p>
                 <div id="info-box" class="bg-sky-100 border-t-4 border-sky-500 rounded-b text-sky-900 px-4 py-3 shadow-md" role="alert"><div class="flex"><div class="py-1"><svg class="fill-current h-6 w-6 text-sky-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zM9 11v4h2v-4H9zm0-4h2v2H9V7z"/></svg></div><div>
-                    <p class="font-bold">本次 AI 業主的談判風格為：<span id="ai-style-info" class="text-red-600"></span></p>
+                    <p class="font-bold">本次 AI 對手的談判風格為：<span id="ai-style-info" class="text-red-600"></span></p>
                     <p class="en-text">This round's AI opponent negotiation style: <span id="ai-style-info-en" class="text-red-600"></span></p>
                     <p class="text-sm mt-2" id="ai-leaked-info"></p>
                 </div></div></div>
@@ -259,14 +259,14 @@
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const screens = { instruction: document.getElementById('instruction-screen'), identity: document.getElementById('identity-screen'), scene: document.getElementById('scene-screen'), game: document.getElementById('game-screen'), report: document.getElementById('report-screen'), finalSummary: document.getElementById('final-summary-screen'), discussion: document.getElementById('discussion-screen') };
-    const buttons = { acceptInstructions: document.getElementById('accept-instructions-btn'), startGame: document.getElementById('start-game-btn'), submitOffer: document.getElementById('submit-offer-btn'), endNegotiation: document.getElementById('end-negotiation-btn'), viewBatna: document.getElementById('view-batna-btn'), nextRound: document.getElementById('next-round-btn'), viewSummary: document.getElementById('view-summary-btn'), goToDiscussion: document.getElementById('go-to-discussion-btn'), restartSeries: document.getElementById('restart-series-btn-final'), modalClose: document.getElementById('modal-close-btn') };
+    const buttons = { acceptInstructions: document.getElementById('accept-instructions-btn'), startGame: document.getElementById('start-game-btn'), submitOffer: document.getElementById('submit-offer-btn'), endNegotiation: document.getElementById('end-negotiation-btn'), viewBatna: document.getElementById('view-batna-btn'), nextRound: document.getElementById('next-round-btn'), viewSummary: document.getElementById('view-summary-btn'), goToDiscussion: document.getElementById('go-to-discussion-btn'), restartSeries: document.getElementById('restart-series-btn'), restartSeriesFinal: document.getElementById('restart-series-btn-final'), modalClose: document.getElementById('modal-close-btn') };
     const identityChoiceBtns = document.querySelectorAll('.identity-choice-btn');
     const inputs = { param1: document.getElementById('param1'), param2: document.getElementById('param2'), param3: document.getElementById('param3'), param4: document.getElementById('param4'), param5: document.getElementById('param5') };
     const displays = {
         sceneTitle: document.getElementById('scene-title'), sceneTitleEn: document.getElementById('scene-title-en'), sceneDescription: document.getElementById('scene-description'), sceneDescriptionEn: document.getElementById('scene-description-en'),
         sceneUserParams: document.getElementById('scene-user-params'), sceneUserBatna: document.getElementById('scene-user-batna'),
         param1Value: document.getElementById('param1-value'), param2Value: document.getElementById('param2-value'), param3Value: document.getElementById('param3-value'), param4Value: document.getElementById('param4-value'), param5Value: document.getElementById('param5-value'),
-        param5DescGame: document.getElementById('param5-description-game'), obligationDefsStart: document.getElementById('obligation-definitions-start'), aiResponse: document.getElementById('ai-response'), 
+        param5DescGame: document.getElementById('param5-description-game'), obligationDefsStart: document.getElementById('definitions-content'), aiResponse: document.getElementById('ai-response'), 
         aiStyleInfo: document.getElementById('ai-style-info'), aiStyleInfoEn: document.getElementById('ai-style-info-en'), aiLeakedInfo: document.getElementById('ai-leaked-info'),
         resultTitle: document.getElementById('result-title'), resultText: document.getElementById('result-text'), reportAiStyle: document.getElementById('report-ai-style'), reportTableBody: document.getElementById('report-table-body'),
         dealZoneAnalysis: document.getElementById('deal-zone-analysis'), behaviorStats: document.getElementById('behavior-stats'), satisfactionScores: document.getElementById('satisfaction-scores'), smartTips: document.getElementById('smart-tips'),
@@ -287,17 +287,61 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentBatna = '';
     let paramKeys = [];
 
-    async function apiCall(action, payload = {}) { /* ... Omitted for brevity ... */ }
-    function switchScreen(screenName) { Object.values(screens).forEach(s => s.classList.remove('active')); screens[screenName].classList.add('active'); }
-    function showModal(title, title_en, bodyHTML) { /* ... Omitted for brevity ... */ }
-    function hideModal() { /* ... Omitted for brevity ... */ }
-    function toggleButtonLoading(button, isLoading, text = '') { /* ... Omitted for brevity ... */ }
-    function stopTimer() { clearInterval(timerInterval); timerInterval = null; }
+    async function apiCall(action, payload = {}) {
+        try {
+            const response = await fetch('/api/negotiate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action, ...payload }),
+            });
+            const contentType = response.headers.get("content-type");
+            if (!contentType || !contentType.includes("application/json")) {
+                 throw new Error("伺服器返回了無效的回應格式(不是JSON)。這很可能是因為預覽環境無法執行後端程式碼，請在部署後測試。\n\nServer returned an invalid format (not JSON). This is likely because the preview environment cannot execute backend code. Please test after deployment.");
+            }
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.details || `伺服器錯誤 (Server Error): ${response.status}`);
+            return data;
+        } catch (error) {
+            console.error('API call failed:', error);
+            alert(`與伺服器通信失敗，請刷新頁面重試。\nCommunication with the server failed, please refresh and try again.\n\n錯誤詳情 (Error Details): ${error.message}`);
+            return null;
+        }
+    }
 
-    function startTimer() { /* ... Omitted for brevity ... */ }
+    function switchScreen(screenName) { Object.values(screens).forEach(s => s.classList.remove('active')); screens[screenName].classList.add('active'); }
+    function showModal(title, title_en, bodyHTML) { /* ... implementation ... */ }
+    function hideModal() { /* ... implementation ... */ }
+    function toggleButtonLoading(button, isLoading, text = '') { /* ... implementation ... */ }
+
+    function stopTimer() { clearInterval(timerInterval); timerInterval = null; }
+    function startTimer() {
+        stopTimer(); 
+        let timeLeft = 300; // 5 minutes
+        displays.timer.textContent = "05:00";
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            displays.timer.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            if (timeLeft <= 0) {
+                stopTimer();
+                alert("時間到！談判自動結束。\nTime's up! The negotiation has ended automatically.");
+                handleEndNegotiation();
+            }
+        }, 1000);
+    }
     
     function updateSliderValue(key, value) {
-        // ... Logic to update slider display value
+        const pKey = `param${paramKeys.indexOf(key) + 1}`;
+        const valueDisplay = displays[`${pKey}Value`];
+        const label = document.querySelector(`label[for="${pKey}"] span`);
+        if(!label || !valueDisplay) return;
+        
+        let displayValue = value;
+        if (label.dataset.unit === '元' || label.dataset.unit === '%') {
+             displayValue = parseInt(value).toLocaleString();
+        }
+        valueDisplay.textContent = `${displayValue} ${label.dataset.unit || ''}`;
     }
 
     async function init(payload = {}) {
@@ -313,44 +357,55 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             gameStateToken = data.token;
             coolDownMessage = data.coolDownMessage;
-            currentBatna = data.scene.userBatna;
+            currentBatna = data.scene.batna.text;
             paramKeys = Object.keys(data.scene.params.user);
 
             displays.sceneTitle.textContent = data.scene.title;
-            // ... (Populate all scene display elements)
+            displays.sceneTitleEn.textContent = data.scene.en_title;
+            displays.sceneDescription.innerHTML = data.scene.desc;
+            displays.sceneDescriptionEn.innerHTML = `<p class="en-text">${data.scene.en_desc}</p>`;
+            displays.sceneUserParams.innerHTML = Object.values(data.scene.params.user).map(p => `<li><strong>${p.name} (${p.en_name})</strong>: 期望 <span class="text-green-600">${p.expect.toLocaleString()}${p.unit || ''}</span> | 底線 <span class="text-red-600">${p.reserve.toLocaleString()}${p.unit || ''}</span></li>`).join('');
+            displays.sceneUserBatna.innerHTML = data.scene.batna.text;
 
             displays.aiStyleInfo.textContent = data.aiStyleName;
-            // ... (Populate AI info)
+            displays.aiStyleInfoEn.textContent = data.aiStyleEnName;
+            displays.aiLeakedInfo.innerHTML = data.leakedInfoHTML;
             
             paramKeys.forEach((key, i) => {
-                const inputId = `param${i+1}`;
+                const pKey = `param${i+1}`;
                 const param = data.sliderConfig[key];
                 const sceneParam = data.scene.params.user[key];
-                const label = document.querySelector(`label[for="${inputId}"] span`);
+                const label = document.querySelector(`label[for="${pKey}"] span`);
                 if (label) {
                     label.innerHTML = `${sceneParam.name} (${sceneParam.en_name})`;
                     label.dataset.name = sceneParam.name;
                     label.dataset.enName = sceneParam.en_name;
+                    label.dataset.unit = sceneParam.unit || '';
                 }
-                if (inputs[inputId]) {
-                    inputs[inputId].min = param.min;
-                    inputs[inputId].max = param.max;
-                    inputs[inputId].step = param.step;
-                    inputs[inputId].value = data.initialOffer[key];
+                if (inputs[pKey]) {
+                    inputs[pKey].min = param.min;
+                    inputs[pKey].max = param.max;
+                    inputs[pKey].step = param.step;
+                    inputs[pKey].value = data.initialOffer[key];
+                    updateSliderValue(key, data.initialOffer[key]);
                 }
             });
-
-            const buttonText = data.isPractice ? '開始練習輪 <span class="text-sky-200 ml-1">Start Practice</span>' : `開始第 ${data.roundNum} / 5 輪 <span class="text-sky-200 ml-1">Start Round ${data.roundNum}/5</span>`;
+            const buttonText = data.isPractice 
+                ? '開始練習輪 <span class="text-sky-200 ml-1">Start Practice</span>' 
+                : `開始第 ${data.roundNum} / 5 輪 <span class="text-sky-200 ml-1">Start Round ${data.roundNum}/5</span>`;
             toggleButtonLoading(buttons.startGame, false, buttonText);
         }
-
-        // ... (Populate obligation defs and update slider values)
     }
 
     async function handleSubmitOffer() {
         const now = Date.now();
         if (now - lastSubmitTimestamp < 30000) {
-            // ... (Cooldown logic)
+            showModal(
+                '提交過於頻繁！', 'Submission Too Frequent!',
+                `<p>${coolDownMessage.zh}</p><p class="en-text">${coolDownMessage.en}</p><p class="mt-2 text-sm text-amber-700">（此行為已被記錄為一次「非理性思考」）<br><span class="en-text">(This action has been recorded as one "irrational move")</span></p>`
+            );
+            const data = await apiCall('irrationalMove', { token: gameStateToken });
+            if (data) gameStateToken = data.token;
             return;
         }
 
@@ -375,26 +430,102 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showSuccessAndReport(reportData) {
-        // ... (Success modal logic)
-        renderReport(reportData);
+        displays.successTitle.textContent = reportData.successMessage.zh;
+        displays.successTitleEn.textContent = reportData.successMessage.en_zh;
+        displays.successMessage.textContent = reportData.successMessage.sub_zh;
+        displays.successMessageEn.textContent = reportData.successMessage.sub_en;
+
+        displays.successModal.classList.remove('hidden');
+        displays.successModal.classList.add('flex');
+        setTimeout(() => { if (displays.successModal.querySelector('div')) displays.successModal.querySelector('div').classList.remove('scale-95', 'opacity-0'); }, 10);
+        setTimeout(() => {
+            if (displays.successModal.querySelector('div')) displays.successModal.querySelector('div').classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                displays.successModal.classList.add('hidden');
+                displays.successModal.classList.remove('flex');
+                renderReport(reportData);
+            }, 300);
+        }, 2500);
     }
     
     async function handleEndNegotiation() {
-        // ... (End negotiation logic)
+        stopTimer();
+        const offer = {};
+        paramKeys.forEach((key, i) => {
+            offer[key] = parseFloat(inputs[`param${i+1}`].value);
+        });
+        const data = await apiCall('end', { token: gameStateToken, offer });
+        if (data) {
+             gameStateToken = data.token;
+             renderReport(data.reportData);
+        }
     }
 
     function renderReport(data) {
-        // ... (Populate report screen from data)
+        displays.resultTitle.textContent = data.isSuccess ? '談判成功！' : '談判破裂';
+        displays.resultText.innerHTML = data.resultText;
+        displays.reportAiStyle.innerHTML = data.aiStyleName;
+        displays.reportTableBody.innerHTML = data.reportTableHTML;
+        displays.dealZoneAnalysis.innerHTML = data.dealZoneAnalysisHTML;
+        displays.behaviorStats.innerHTML = data.behaviorStatsHTML;
+        displays.satisfactionScores.innerHTML = data.satisfactionScoresHTML;
+        displays.smartTips.innerHTML = data.smartTipsHTML;
+        
+        if (data.isPracticeRoundOver) {
+            buttons.nextRound.innerHTML = '開始正式挑戰 <span class="text-sky-200">Start Official Challenge</span>';
+        } else {
+            buttons.nextRound.innerHTML = `前往第 ${data.roundNum + 1} 輪 <span class="text-sky-200">Go to Round ${data.roundNum + 1}</span>`;
+        }
+
+        if (data.isGameOver) {
+            buttons.nextRound.classList.add('hidden');
+            buttons.viewSummary.classList.remove('hidden');
+            buttons.viewSummary.onclick = () => renderFinalSummary(data.gameHistory, data.finalScore, data.discussionQuestions);
+        } else {
+            buttons.nextRound.classList.remove('hidden');
+            buttons.viewSummary.classList.add('hidden');
+        }
+        
         switchScreen('report');
     }
 
     function renderFinalSummary(gameHistory, finalScore, discussionQuestions) {
-        // ... (Populate final summary screen)
+        displays.finalScore.textContent = `${finalScore.score} / 100`;
+        displays.finalScoreLogic.innerHTML = finalScore.logic;
+        displays.finalSummaryTableBody.innerHTML = gameHistory.map(round => {
+            const resultClass = round.isSuccess ? 'text-green-600' : 'text-red-600';
+            const userScore = round.satisfaction.user !== '--' ? `${round.satisfaction.user} / 10` : '--';
+            const aiScore = round.satisfaction.ai !== '--' ? `${round.satisfaction.ai} / 10` : '--';
+            
+            const dealTerms = round.isSuccess && round.finalOffer 
+                ? `${round.finalOffer.param1.toLocaleString()} / ${round.finalOffer.param2.toLocaleString()}`
+                : '--';
+
+            const overConcessionCount = round.satisfaction.penaltyReasons ? round.satisfaction.penaltyReasons.length : 0;
+
+            return `<tr class="border-b">
+                <td class="p-3 font-medium">${round.styleName}<p class="en-text">${round.en_styleName}</p></td>
+                <td class="p-3 font-bold ${resultClass}">${round.isSuccess ? '談成' : '破裂'}<p class="en-text font-normal">${round.isSuccess ? 'Deal' : 'No Deal'}</p></td>
+                <td class="p-3 text-sm">${dealTerms}</td>
+                <td class="p-3 text-center">${round.offersSubmitted}</td>
+                <td class="p-3 text-center">${round.batnaViews}</td>
+                <td class="p-3 text-center text-amber-600 font-bold">${overConcessionCount}</td>
+                <td class="p-3 text-center text-red-600 font-bold">${round.irrationalMoves}</td>
+                <td class="p-3">${userScore}</td>
+                <td class="p-3">${aiScore}</td>
+            </tr>`;
+        }).join('');
+        buttons.goToDiscussion.onclick = () => renderDiscussion(discussionQuestions);
         switchScreen('finalSummary');
     }
 
     function renderDiscussion(questions) {
-        // ... (Populate discussion screen)
+        displays.discussionQuestions.innerHTML = questions.map((q, i) => `
+            <div class="p-4 bg-slate-50 rounded-lg">
+                <p class="font-semibold text-slate-800">${i + 1}. ${q.zh}</p>
+                <p class="en-text text-slate-600">${q.en}</p>
+            </div>
+        `).join('');
         switchScreen('discussion');
     }
 
@@ -413,9 +544,6 @@ document.addEventListener('DOMContentLoaded', () => {
     buttons.submitOffer.addEventListener('click', handleSubmitOffer);
     buttons.endNegotiation.addEventListener('click', handleEndNegotiation);
     buttons.nextRound.addEventListener('click', () => init({ token: gameStateToken }));
-    buttons.goToDiscussion.addEventListener('click', () => {
-        // This button is dynamically assigned its onclick in renderFinalSummary
-    });
     buttons.restartSeries.addEventListener('click', () => switchScreen('instruction'));
     buttons.restartSeriesFinal.addEventListener('click', () => switchScreen('instruction'));
     buttons.viewBatna.addEventListener('click', () => {
@@ -425,7 +553,9 @@ document.addEventListener('DOMContentLoaded', () => {
     buttons.modalClose.addEventListener('click', hideModal);
     Object.values(inputs).forEach((input, i) => { 
         if (input) { 
-            input.addEventListener('input', (e) => updateSliderValue(paramKeys[i], e.target.value)); 
+            input.addEventListener('input', (e) => {
+                 if (paramKeys[i]) updateSliderValue(paramKeys[i], e.target.value);
+            }); 
         } 
     });
 });
