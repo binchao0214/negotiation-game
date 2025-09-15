@@ -1,49 +1,38 @@
-// --- 核心设定 ---
-const OBLIGATION_LEVELS = { 1: { name: '輕度義務' }, 2: { name: '一般義務' }, 3: { name: '中度義務' }, 4: { name: '重度義務' }, 5: { name: '全面義務' } };
+// --- 核心设定 (Core Settings) ---
+const OBLIGATION_LEVELS = { 
+    1: { name: '輕度義務', en_name: 'Light' }, 
+    2: { name: '一般義務', en_name: 'General' }, 
+    3: { name: '中度義務', en_name: 'Moderate' }, 
+    4: { name: '重度義務', en_name: 'Heavy' }, 
+    5: { name: '全面義務', en_name: 'Comprehensive' } 
+};
 const BASE_PARAMS = {
     user: {
-        cost: { expect: 10500000, reserve: 9000000, name: '總造價', unit: '元' },
-        duration: { expect: 330, reserve: 240, name: '工期', unit: '天' },
-        warranty: { expect: 1, reserve: 4, name: '保修期', unit: '年' },
-        prepayment: { expect: 25, reserve: 15, name: '預付款', unit: '%' },
-        obligation: { expect: 1, reserve: 4, name: '附加義務等級', unit: '' }
+        cost:       { expect: 10500000, reserve: 9000000, name: '總造價',       en_name: 'Total Cost',       unit: '元', en_unit: '' },
+        duration:   { expect: 330,      reserve: 240,     name: '工期',         en_name: 'Duration',         unit: '天', en_unit: ' Days' },
+        warranty:   { expect: 1,        reserve: 4,       name: '保修期',       en_name: 'Warranty',         unit: '年', en_unit: ' Years' },
+        prepayment: { expect: 25,       reserve: 15,      name: '預付款',       en_name: 'Prepayment',       unit: '%',  en_unit: '%' },
+        obligation: { expect: 1,        reserve: 4,       name: '附加義務等級', en_name: 'Obligation Level', unit: '',   en_unit: '' }
     },
     ai: {
-        cost: { expect: 8500000, reserve: 10000000, name: '總造價', unit: '元' },
-        duration: { expect: 210, reserve: 270, name: '工期', unit: '天' },
-        warranty: { expect: 5, reserve: 3, name: '保修期', unit: '年' },
-        prepayment: { expect: 10, reserve: 20, name: '預付款', unit: '%' },
-        obligation: { expect: 5, reserve: 3, name: '附加義務等級', unit: '' }
+        cost:       { expect: 8500000,  reserve: 10000000, name: '總造價',       en_name: 'Total Cost',       unit: '元', en_unit: '' },
+        duration:   { expect: 210,      reserve: 270,      name: '工期',         en_name: 'Duration',         unit: '天', en_unit: ' Days' },
+        warranty:   { expect: 5,        reserve: 3,        name: '保修期',       en_name: 'Warranty',         unit: '年', en_unit: ' Years' },
+        prepayment: { expect: 10,       reserve: 20,       name: '預付款',       en_name: 'Prepayment',       unit: '%',  en_unit: '%' },
+        obligation: { expect: 5,        reserve: 3,        name: '附加義務等級', en_name: 'Obligation Level', unit: '',   en_unit: '' }
     }
 };
 const AI_STYLES = {
-    tough: { name: '強悍型', desc: '業主尋求完美匹配。成交條件：所有 5 個談判項必須全部落在雙方的成交區間 (ZOPA) 內。' },
-    horseTrader: { name: '交換型', desc: '業主注重多數共識。成交條件：至少有 4 個談判項落在雙方的成交區間 (ZOPA) 內。' },
-    fair: { name: '公平型', desc: '業主尋求整體平衡。成交條件：至少有 3 個談判項落在雙方的成交區間 (ZOPA) 內。' },
-    key: { name: '關鍵變量型', desc: '業主對核心利益寸步不讓。成交條件：至少有 3 個談判項落在 ZOPA 內，且其中必須包含「總造價」和「工期」。' },
-    accommodating: { name: '隨和型', desc: '業主態度開放，容易達成。成交條件：至少有 2 個談判項落在雙方的成交區間 (ZOPA) 內。' }
+    tough:       { name: '強悍型',       en_name: 'Tough',         desc: '業主尋求完美匹配。成交條件：所有 5 個談判項必須全部落在雙方的成交區間 (ZOPA) 內。', en_desc: 'The client seeks a perfect match. Deal Condition: All 5 negotiation items must fall within the ZOPA.' },
+    horseTrader: { name: '交換型',       en_name: 'Horse-Trader',  desc: '業主注重多數共識。成交條件：至少有 4 個談判項落在雙方的成交區間 (ZOPA) 內。', en_desc: 'The client focuses on majority consensus. Deal Condition: At least 4 negotiation items must fall within the ZOPA.' },
+    fair:        { name: '公平型',       en_name: 'Fair',          desc: '業主尋求整體平衡。成交條件：至少有 3 個談判項落在雙方的成交區間 (ZOPA) 內。', en_desc: 'The client seeks an overall balance. Deal Condition: At least 3 negotiation items must fall within the ZOPA.' },
+    key:         { name: '關鍵變量型',   en_name: 'Key-Variable',  desc: '業主對核心利益寸步不讓。成交條件：至少有 3 個談判項落在 ZOPA 內，且其中必須包含「總造價」和「工期」。', en_desc: 'The client is uncompromising on core interests. Deal Condition: At least 3 items in ZOPA, which must include Total Cost and Duration.' },
+    accommodating: { name: '隨和型',     en_name: 'Accommodating', desc: '業主態度開放，容易達成。成交條件：至少有 2 個談判項落在雙方的成交區間 (ZOPA) 內。', en_desc: 'The client is open and easy to deal with. Deal Condition: At least 2 negotiation items must fall within the ZOPA.' }
 };
 
-// --- 辅助函数 ---
-function encodeState(state) {
-    try {
-        const jsonString = JSON.stringify(state);
-        return btoa(unescape(encodeURIComponent(jsonString)));
-    } catch (e) {
-        console.error('Encoding failed:', e);
-        return '';
-    }
-}
-
-function decodeState(token) {
-    try {
-        const jsonString = decodeURIComponent(escape(atob(token)));
-        return JSON.parse(jsonString);
-    } catch (e) {
-        console.error('Decoding failed:', e);
-        return null;
-    }
-}
+// --- 辅助函数 (Helper Functions) ---
+function encodeState(state) { try { return btoa(unescape(encodeURIComponent(JSON.stringify(state)))); } catch (e) { console.error('Encoding failed:', e); return ''; } }
+function decodeState(token) { try { return JSON.parse(decodeURIComponent(escape(atob(token)))); } catch (e) { console.error('Decoding failed:', e); return null; } }
 
 function generateDynamicParams(styleKey) {
     const flexibilityFactors = { tough: 0.4, horseTrader: 0.6, fair: 0.8, key: 0.7, accommodating: 1.0 };
@@ -90,22 +79,32 @@ function generateAiResponse(offer, gameState) {
         }
     }
 
-    if (painPoints.length === 0) { return `這個方案看起來有誠意，我們正在接近達成共識。但在總體利益上，我方還需要再評估一下，才能完全同意。`; }
+    if (painPoints.length === 0) { return `這個方案看起來有誠意，我們正在接近達成共識。但在總體利益上，我方還需要再評估一下，才能完全同意。<p class="en-text">This offer shows sincerity, and we are getting close to a consensus. However, I need to re-evaluate the overall benefits for our side.</p>`; }
     
     const mainPainPoint = painPoints[Math.floor(Math.random() * painPoints.length)];
-    const paramName = aiParams[mainPainPoint.key].name;
+    const param = aiParams[mainPainPoint.key];
+    const { name, en_name } = param;
 
     if (gameState.lastPainPoint === mainPainPoint.key) { gameState.consecutivePainPointCount++; } 
     else { gameState.lastPainPoint = mainPainPoint.key; gameState.consecutivePainPointCount = 1; }
     
     const responses = {
-        cost: [ `關於<strong>${paramName}</strong>，您提出的 ${mainPainPoint.userValue.toLocaleString()} 元，與我們的預算差距有點大。`, `我理解您的成本考量，但在<strong>${paramName}</strong>上，我們恐怕無法接受 ${mainPainPoint.userValue.toLocaleString()} 元這個數字。` ],
-        duration: [ `在<strong>${paramName}</strong>方面，${mainPainPoint.userValue} 天的時間對我們來說太長了，我們有嚴格的上市時程。`, `我方非常重視效率，${mainPainPoint.userValue} 天的<strong>${paramName}</strong>不符合我們的期望。` ],
-        default: [ `我們注意到在<strong>${paramName}</strong>這項，您提出的條件是 ${mainPainPoint.userValue}，這與我方的立場有一定距離。`, `我理解您的立場，但在<strong>${paramName}</strong>上，我們需要尋求一個更接近我方期望的方案。` ]
+        cost: [ 
+            `關於<strong>${name}</strong>，您提出的 ${mainPainPoint.userValue.toLocaleString()} 元，與我們的預算差距有點大。<p class="en-text">Regarding the <strong>${en_name}</strong>, your offer of ${mainPainPoint.userValue.toLocaleString()} is a bit far from our budget.</p>`, 
+            `我理解您的成本考量，但在<strong>${name}</strong>上，我們恐怕無法接受 ${mainPainPoint.userValue.toLocaleString()} 元這個數字。<p class="en-text">I understand your cost considerations, but we cannot accept the figure of ${mainPainPoint.userValue.toLocaleString()} for the <strong>${en_name}</strong>.</p>` 
+        ],
+        duration: [ 
+            `在<strong>${name}</strong>方面，${mainPainPoint.userValue} 天的時間對我們來說太長了，我們有嚴格的上市時程。<p class="en-text">As for the <strong>${en_name}</strong>, ${mainPainPoint.userValue} days is too long for us; we have a strict go-to-market schedule.</p>`, 
+            `我方非常重視效率，${mainPainPoint.userValue} 天的<strong>${name}</strong>不符合我們的期望。<p class="en-text">We prioritize efficiency, and a <strong>${en_name}</strong> of ${mainPainPoint.userValue} days does not meet our expectations.</p>`
+        ],
+        default: [ 
+            `我們注意到在<strong>${name}</strong>這項，您提出的條件是 ${mainPainPoint.userValue}，這與我方的立場有一定距離。<p class="en-text">We've noted that on <strong>${en_name}</strong>, your proposed term of ${mainPainPoint.userValue} is some distance from our position.</p>`, 
+            `我理解您的立場，但在<strong>${name}</strong>上，我們需要尋求一個更接近我方期望的方案。<p class="en-text">I understand your position, but on <strong>${en_name}</strong>, we need to find a solution closer to our expectations.</p>`
+        ]
     };
 
     if (gameState.consecutivePainPointCount >= 2) {
-        return `我們似乎在<strong>${paramName}</strong>上卡關了。這個條件對我們來說確實是個障礙，您能否在其他方面做些讓步來平衡一下？`;
+        return `我們似乎在<strong>${name}</strong>上卡關了。這個條件對我們來說確實是個障礙，您能否在其他方面做些讓步來平衡一下？<p class="en-text">It seems we're stuck on the <strong>${en_name}</strong>. This term is a real obstacle for us. Could you perhaps make a concession elsewhere to balance it out?</p>`;
     }
 
     const responseSet = responses[mainPainPoint.key] || responses.default;
@@ -114,10 +113,9 @@ function generateAiResponse(offer, gameState) {
 
 function calculateSatisfactionScores(finalOffer) {
     const RANGES = { cost: { min: 8500000, max: 11000000 }, duration: { min: 200, max: 350 }, warranty: { min: 1, max: 5 }, prepayment: { min: 10, max: 30 }, obligation: { min: 1, max: 5 } };
-    const normalize = (key, value) => (value - RANGES[key].min) / (RANGES[key].max - RANGES[key].min);
+    const normalize = (key, value) => (RANGES[key].max - RANGES[key].min === 0) ? 0 : (value - RANGES[key].min) / (RANGES[key].max - RANGES[key].min);
     
-    let userSqDiff = 0;
-    let aiSqDiff = 0;
+    let userSqDiff = 0, aiSqDiff = 0;
     
     for (const key in finalOffer) {
         const normFinal = normalize(key, finalOffer[key]);
@@ -127,12 +125,9 @@ function calculateSatisfactionScores(finalOffer) {
         aiSqDiff += Math.pow(normFinal - normAiExpect, 2);
     }
 
-    const userDist = Math.sqrt(userSqDiff);
-    const aiDist = Math.sqrt(aiSqDiff);
     const maxDist = Math.sqrt(Object.keys(finalOffer).length);
-
-    const userSatisfaction = Math.max(0, 10 * (1 - userDist / maxDist)).toFixed(1);
-    const aiSatisfaction = Math.max(0, 10 * (1 - aiDist / maxDist)).toFixed(1);
+    const userSatisfaction = Math.max(0, 10 * (1 - Math.sqrt(userSqDiff) / maxDist)).toFixed(1);
+    const aiSatisfaction = Math.max(0, 10 * (1 - Math.sqrt(aiSqDiff) / maxDist)).toFixed(1);
 
     return { user: userSatisfaction, ai: aiSatisfaction };
 }
@@ -146,24 +141,30 @@ function generateReportData(gameState, finalOffer, isSuccess) {
 
     const currentRoundHistory = {
         styleName: aiStyle.name,
+        en_styleName: aiStyle.en_name,
         isSuccess,
         satisfaction,
-        offersSubmitted: stats.offers
+        offersSubmitted: stats.offers,
+        batnaViews: stats.batnaViews,
+        finalOffer: isSuccess ? finalOffer : null
     };
     const updatedGameHistory = [...gameHistory, currentRoundHistory];
     const isGameOver = updatedGameHistory.length >= Object.keys(AI_STYLES).length;
 
+    let finalScore = null;
+    if (isGameOver) {
+        finalScore = calculateFinalScore(updatedGameHistory);
+    }
+
     return {
-        isSuccess,
-        isGameOver,
-        gameHistory: updatedGameHistory,
-        resultText: isSuccess ? '恭喜！您與業主達成了雙方都能接受的協議。' : '很遺憾，雙方未能達成共識，談判破裂。',
-        aiStyleName: aiStyle.name,
+        isSuccess, isGameOver, gameHistory: updatedGameHistory, finalScore,
+        resultText: isSuccess ? '恭喜！您與業主達成了雙方都能接受的協議。<p class="en-text">Congratulations! You have reached a mutually acceptable agreement with the client.</p>' : '很遺憾，雙方未能達成共識，談判破裂。<p class="en-text">Unfortunately, a consensus was not reached, and the negotiation has failed.</p>',
+        aiStyleName: `${aiStyle.name}<p class="en-text">${aiStyle.en_name}</p>`,
         reportTableHTML: Object.keys(BASE_PARAMS.user).map(key => {
             const param = BASE_PARAMS.user[key];
             const finalValue = finalOffer[key];
             return `<tr class="border-b">
-                <td class="p-3 font-medium">${param.name}</td>
+                <td class="p-3 font-medium">${param.name}<p class="en-text font-normal">${param.en_name}</p></td>
                 <td class="p-3 ${finalZopaStatus[key] ? 'text-green-600 font-bold' : ''}">${finalValue.toLocaleString()}${param.unit}</td>
                 <td>${param.expect.toLocaleString()}${param.unit}</td><td>${param.reserve.toLocaleString()}${param.unit}</td>
                 <td>${aiParams[key].reserve.toLocaleString()}${aiParams[key].unit}</td><td>${aiParams[key].expect.toLocaleString()}${aiParams[key].unit}</td>
@@ -171,11 +172,24 @@ function generateReportData(gameState, finalOffer, isSuccess) {
         }).join(''),
         dealZoneAnalysisHTML: Object.keys(BASE_PARAMS.user).map(key => {
             const inZopa = finalZopaStatus[key];
-            return `<div><span class="font-medium">${BASE_PARAMS.user[key].name}:</span><span class="ml-2 text-sm font-semibold text-white px-2 py-1 rounded-full ${inZopa ? 'bg-green-500' : 'bg-red-500'}">${inZopa ? '在成交區間內' : '未落在成交區間'}</span></div>`;
+            return `<div><span class="font-medium">${BASE_PARAMS.user[key].name} (${BASE_PARAMS.user[key].en_name}):</span><span class="ml-2 text-sm font-semibold text-white px-2 py-1 rounded-full ${inZopa ? 'bg-green-500' : 'bg-red-500'}">${inZopa ? '在成交區間內 (In ZOPA)' : '未落在成交區間 (Outside ZOPA)'}</span></div>`;
         }).join(''),
-        behaviorStatsHTML: `<li>對話輪次: <strong>${stats.offers}</strong> 次</li><li>查看 BATNA: <strong>${stats.batnaViews}</strong> 次</li>`,
-        satisfactionScoresHTML: `<div class="flex justify-between"><span>您的滿意度:</span><span class="font-bold text-lg">${satisfaction.user} / 10</span></div><div class="flex justify-between"><span>業主滿意度:</span><span class="font-bold text-lg">${satisfaction.ai} / 10</span></div>`,
-        smartTipsHTML: `<p><strong>分析：</strong>您的方案${isSuccess ? '' : '未'}能滿足業主 ${aiStyle.name} 風格的成交條件 (${aiStyle.desc})。</p>`
+        behaviorStatsHTML: `<li>對話輪次 (Rounds): <strong>${stats.offers}</strong> 次</li><li>查看 BATNA (BATNA Views): <strong>${stats.batnaViews}</strong> 次</li>`,
+        satisfactionScoresHTML: `<div class="flex justify-between"><span>您的滿意度 (Your Score):</span><span class="font-bold text-lg">${satisfaction.user} / 10</span></div><div class="flex justify-between"><span>業主滿意度 (Client's Score):</span><span class="font-bold text-lg">${satisfaction.ai} / 10</span></div>`,
+        smartTipsHTML: `<p><strong>分析 (Analysis):</strong> 您的方案${isSuccess ? '' : '未'}能滿足業主 ${aiStyle.name} (${aiStyle.en_name}) 風格的成交條件。<br>${aiStyle.desc}<br><span class="en-text">${aiStyle.en_desc}</span></p>`
+    };
+}
+
+function calculateFinalScore(gameHistory) {
+    let totalScore = 0;
+    gameHistory.forEach(round => {
+        if (round.isSuccess) {
+            totalScore += 10 + parseFloat(round.satisfaction.user);
+        }
+    });
+    return {
+        score: totalScore.toFixed(1),
+        logic: '總分滿分為 100 分，每輪滿分 20 分。談判成功可獲得 10 分基礎分，並額外加上您的滿意度評分 (最高 10 分)。談判破裂則該輪為 0 分。<p class="en-text">The total score is 100, with a maximum of 20 points per round. A successful deal earns a base of 10 points plus your satisfaction score (up to 10). A failed negotiation scores 0 for the round.</p>'
     };
 }
 
@@ -187,7 +201,8 @@ const handleAction = {
         
         const allStyleKeys = Object.keys(AI_STYLES);
         if (completedStyles.length >= allStyleKeys.length) {
-            return { isGameOver: true, gameHistory: gameHistory };
+            const finalScore = calculateFinalScore(gameHistory);
+            return { isGameOver: true, gameHistory, finalScore };
         }
         
         let availableStyles = allStyleKeys.filter(k => !completedStyles.includes(k));
@@ -195,29 +210,29 @@ const handleAction = {
         
         let gameState = {
             stats: { offers: 0, batnaViews: 0 },
-            lastPainPoint: null,
-            consecutivePainPointCount: 0,
-            completedStyles: completedStyles,
-            gameHistory: gameHistory
+            lastPainPoint: null, consecutivePainPointCount: 0,
+            completedStyles: completedStyles, gameHistory: gameHistory
         };
 
         gameState.aiStyle = { key: randomStyleKey, ...AI_STYLES[randomStyleKey] };
         gameState.aiParams = generateDynamicParams(randomStyleKey);
         
-        let leakText = '情報顯示：業主方';
+        let leakText = '情報顯示 (Intel shows): 業主方 (the Client)...';
         const leakableParams = ['duration', 'warranty', 'prepayment', 'obligation'];
         const shuffledLeaks = leakableParams.sort(() => 0.5 - Math.random());
-        const leaksToReveal = shuffledLeaks.slice(0, Math.random() < 0.5 ? 1 : 2);
+        const leaksToReveal = shuffledLeaks.slice(0, 1 + Math.floor(Math.random() * 2));
         leaksToReveal.forEach((paramKey, index) => {
             const param = gameState.aiParams[paramKey];
             const type = Math.random() < 0.5 ? '期望' : '底線';
+            const en_type = type === '期望' ? 'expectation' : 'reserve point';
             const value = type === '期望' ? param.expect : param.reserve;
-            leakText += `${index > 0 ? '，同時' : ''}對 <strong>${param.name}</strong> 的${type}是 <strong>${value}${param.unit || ''}</strong>`;
+            leakText += `<br>${index > 0 ? '同時' : '對'} <strong>${param.name} (${param.en_name})</strong> 的${type}是 <strong>${value}${param.unit || ''}</strong>. <span class="en-text">(...and their ${en_type} for <strong>${param.en_name}</strong> is <strong>${value}${param.en_unit || ''}</strong>)</span>`;
         });
         
         return {
             isGameOver: false,
             aiStyleName: gameState.aiStyle.name,
+            aiStyleEnName: gameState.aiStyle.en_name,
             leakedInfoHTML: leakText,
             initialOffer: Object.fromEntries(Object.keys(BASE_PARAMS.user).map(key => [key, BASE_PARAMS.user[key].expect])),
             token: encodeState(gameState)
@@ -225,7 +240,7 @@ const handleAction = {
     },
     'submit': (gameState, payload) => {
         const { offer } = payload;
-        if (!offer) throw new Error("缺少 offer 数据");
+        if (!offer) throw new Error("缺少 offer 数据 (Missing offer data)");
         gameState.stats.offers++;
         const isDeal = checkDealCondition(offer, gameState.aiStyle.key, gameState.aiParams);
         
@@ -233,6 +248,9 @@ const handleAction = {
             const reportData = generateReportData(gameState, offer, true);
             gameState.completedStyles.push(gameState.aiStyle.key);
             gameState.gameHistory = reportData.gameHistory;
+            if (reportData.isGameOver) {
+                reportData.finalScore = calculateFinalScore(reportData.gameHistory);
+            }
             return { isDeal: true, reportData, token: encodeState(gameState) };
         } else {
             return { isDeal: false, aiResponseHTML: generateAiResponse(offer, gameState), token: encodeState(gameState) };
@@ -243,6 +261,9 @@ const handleAction = {
         const reportData = generateReportData(gameState, finalOffer, false);
         gameState.completedStyles.push(gameState.aiStyle.key);
         gameState.gameHistory = reportData.gameHistory;
+        if (reportData.isGameOver) {
+            reportData.finalScore = calculateFinalScore(reportData.gameHistory);
+        }
         return { reportData, token: encodeState(gameState) };
     },
     'viewBatna': (gameState) => {
@@ -254,15 +275,11 @@ const handleAction = {
 export const onRequest = async ({ request }) => {
     try {
         if (request.method !== 'POST') return new Response(JSON.stringify({ error: 'Method Not Allowed' }), { status: 405, headers: { 'Content-Type': 'application/json' } });
-        
         const payload = await request.json();
         const { action, token } = payload;
-
         if (!action || !handleAction[action]) return new Response(JSON.stringify({ error: 'Invalid action' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
-        
         let gameState = action === 'init' ? null : decodeState(token);
         if (action !== 'init' && !gameState) return new Response(JSON.stringify({ error: 'Invalid game state token' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
-        
         const result = handleAction[action](action === 'init' ? payload : gameState, payload);
         return new Response(JSON.stringify(result), { status: 200, headers: { 'Content-Type': 'application/json' } });
     } catch (error) {
