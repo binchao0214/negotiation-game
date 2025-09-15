@@ -299,6 +299,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function updateSliderValue(key, value) {
         const paramConfig = currentParamConfigs[key];
+        if (!paramConfig) return;
         let displayValue = value;
         
         if (paramConfig.format === 'currency') { displayValue = parseInt(value).toLocaleString(); }
