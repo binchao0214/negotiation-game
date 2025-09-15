@@ -182,6 +182,7 @@
                                 <th class="p-3">對話輪次<p class="en-text font-normal">Rounds</p></th>
                                 <th class="p-3">BATNA 查看<p class="en-text font-normal">BATNA Views</p></th>
                                 <th class="p-3">過度讓步<p class="en-text font-normal">Over-concessions</p></th>
+                                <th class="p-3">非理性思考<p class="en-text font-normal">Irrational Moves</p></th>
                                 <th class="p-3">您的滿意度<p class="en-text font-normal">Your Score</p></th>
                                 <th class="p-3">業主滿意度<p class="en-text font-normal">Client's Score</p></th>
                             </tr>
@@ -219,6 +220,8 @@ document.addEventListener('DOMContentLoaded', () => {
     
     let gameStateToken = null;
     let timerInterval = null;
+    let lastSubmitTimestamp = 0;
+
     const OBLIGATION_LEVELS = { 1: { name: '輕度義務', en_name: 'Light' }, 2: { name: '一般義務', en_name: 'General' }, 3: { name: '中度義務', en_name: 'Moderate' }, 4: { name: '重度義務', en_name: 'Heavy' }, 5: { name: '全面義務', en_name: 'Comprehensive' } };
     const OBLIGATION_DEFS = { 
         1: '配合標準審計流程，提供常規進度報告。<p class="en-text">Cooperate with standard audit procedures, provide regular progress reports.</p>', 
@@ -336,6 +339,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function handleSubmitOffer() {
+        const now = Date.now();
+        if (now - lastSubmitTimestamp < 30000) {
+            showModal(
+                '提交過於頻繁！',
+                'Submission Too Frequent!',
+                `<p>你家不是開銀行的，請你仔細思考後再提出方案！</p><p class="en-text">Your family doesn't own a bank, please think carefully before making another offer!</p><p class="mt-2 text-sm text-amber-700">（此行為已被記錄為一次「非理性思考」）<br><span class="en-text">(This action has been recorded as one "irrational move")</span></p>`
+            );
+            const data = await apiCall('irrationalMove', { token: gameStateToken });
+            if (data) gameStateToken = data.token;
+            return;
+        }
+
+        lastSubmitTimestamp = now;
         toggleButtonLoading(buttons.submitOffer, true);
         const offer = Object.fromEntries(Object.entries(inputs).map(([key, input]) => [key, parseInt(input.value)]));
         const data = await apiCall('submit', { token: gameStateToken, offer });
@@ -418,6 +434,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td class="p-3 text-center">${round.offersSubmitted}</td>
                 <td class="p-3 text-center">${round.batnaViews}</td>
                 <td class="p-3 text-center text-amber-600 font-bold">${overConcessionCount}</td>
+                <td class="p-3 text-center text-red-600 font-bold">${round.irrationalMoves}</td>
                 <td class="p-3">${userScore}</td>
                 <td class="p-3">${aiScore}</td>
             </tr>`;
@@ -426,6 +443,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     buttons.startGame.addEventListener('click', () => { 
+        lastSubmitTimestamp = Date.now(); // Reset timestamp for the new round
         switchScreen('game'); 
         startTimer();
     });
