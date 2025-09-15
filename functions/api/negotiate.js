@@ -162,9 +162,13 @@ function generateDynamicParams(styleKey, baseAiParams) {
 }
 
 function isWithinZOPA(key, value, userParams, aiParams) {
-    const userReserve = userParams[key].reserve;
-    const aiReserve = aiParams[key].reserve;
-    if (userParams[key].expect > userReserve) { 
+    const userParam = userParams[key];
+    const aiParam = aiParams[key];
+    if (!userParam || !aiParam) return false;
+
+    const userReserve = userParam.reserve;
+    const aiReserve = aiParam.reserve;
+    if (userParam.expect > userReserve) { 
         return value >= userReserve && value <= aiReserve;
     } else { 
         return value <= userReserve && value >= aiReserve;
@@ -194,7 +198,6 @@ function checkDealCondition(offer, gameState) {
     }
 }
 
-// 【错误修正】: 将 calculateFinalScore 函式补全并放置在正确的位置
 function calculateFinalScore(gameHistory) {
     let totalScore = 0;
     gameHistory.forEach(round => {
@@ -399,6 +402,7 @@ const handleAction = {
         }
         
         const THEME_DATA = GAME_THEMES[gameState.theme];
+        const isPractice = !gameState.isPracticeComplete;
 
         if (!isPractice && gameState.completedStyles.length >= Object.keys(THEME_DATA.AI_STYLES).length) {
             return { 
@@ -411,8 +415,7 @@ const handleAction = {
         }
 
         let currentRound, scene, sliderConfig, aiStyleName, aiStyleEnName, leakedInfoHTML;
-        const isPractice = !gameState.isPracticeComplete;
-
+        
         if (isPractice) {
             currentRound = {
                 isPractice: true,
@@ -465,7 +468,7 @@ const handleAction = {
             const min = Math.min(...allValues);
             const max = Math.max(...allValues);
             let step = 1;
-            if (key.includes('cost') || key.includes('salary') || key.includes('stipend')) step = (max - min) / 100;
+            if (key.includes('cost') || key.includes('salary') || key.includes('stipend')) step = (max - min) > 5000 ? 100 : 50;
             if (key.includes('prepayment') || key.includes('Collection') || key.includes('slides') || key.includes('writing')) step = 5;
 
             sliderConfig[key] = { min: Math.floor(min*0.9), max: Math.ceil(max*1.1), step: Math.max(1, Math.round(step)) };
@@ -487,7 +490,7 @@ const handleAction = {
         };
     },
     'submit': ({ payload, gameState }) => {
-        if (!gameState) return { error: "Invalid game state" };
+        if (!gameState) return { error: "Invalid game state", details: "Game state is missing." };
         const { offer } = payload;
         gameState.currentRound.stats.offers++;
         const isDeal = checkDealCondition(offer, gameState);
@@ -502,12 +505,12 @@ const handleAction = {
             }
             return { isDeal: true, reportData, token: encodeState(gameState) };
         } else {
-            gameState.currentRound.aiResponse = generateAiResponse(offer, gameState)
+            gameState.currentRound.aiResponse = generateAiResponse(offer, gameState);
             return { isDeal: false, aiResponseHTML: gameState.currentRound.aiResponse, token: encodeState(gameState) };
         }
     },
     'end': ({ payload, gameState }) => {
-        if (!gameState) return { error: "Invalid game state" };
+        if (!gameState) return { error: "Invalid game state", details: "Game state is missing." };
         const THEME_DATA = GAME_THEMES[gameState.theme];
         const userParams = gameState.currentRound.isPractice ? THEME_DATA.PRACTICE_PARAMS.user : THEME_DATA.BASE_PARAMS.user;
         const finalOffer = payload.offer || Object.fromEntries(Object.keys(userParams).map(key => [key, userParams[key].expect]));
@@ -521,14 +524,14 @@ const handleAction = {
         return { reportData, token: encodeState(gameState) };
     },
     'viewBatna': ({ gameState }) => {
-        if (!gameState) return { error: "Invalid game state" };
+        if (!gameState) return { error: "Invalid game state", details: "Game state is missing." };
         gameState.currentRound.stats.batnaViews++;
         const THEME_DATA = GAME_THEMES[gameState.theme];
         const batnaHTML = gameState.currentRound.isPractice ? THEME_DATA.PRACTICE_USER_BATNA_HTML : THEME_DATA.OFFICIAL_USER_BATNA_HTML;
         return { batnaHTML, token: encodeState(gameState) };
     },
     'irrationalMove': ({ gameState }) => {
-        if (!gameState) return { error: "Invalid game state" };
+        if (!gameState) return { error: "Invalid game state", details: "Game state is missing." };
         gameState.currentRound.stats.irrationalMoves++;
         return { token: encodeState(gameState) };
     }
