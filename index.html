@@ -21,16 +21,14 @@
         .modal-content { transition: transform 0.3s ease, opacity 0.3s ease; }
         @keyframes fade-in-up { from { transform: translateY(20px) scale(0.95); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
         .animate-fade-in-up { animation: fade-in-up 0.3s ease-out forwards; }
-        .loader { border: 4px solid #f3f3f3; border-radius: 50%; border-top: 4px solid #3498db; width: 30px; height: 30px; animation: spin 1s linear infinite; }
-        .loader-small { border: 2px solid #f3f3f3; border-top: 2px solid #3498db; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loading-spinner { border: 4px solid rgba(255, 255, 255, 0.3); border-left-color: #ffffff; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="bg-slate-100 text-slate-800">
 
     <div id="app" class="container mx-auto p-4 md:p-8 max-w-5xl">
-        <!-- Generic Modal -->
-        <div id="modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden modal-overlay">
+        <div id="modal" class="fixed inset-0 bg-black bg-opacity-60 items-center justify-center z-50 hidden modal-overlay">
             <div class="bg-white p-6 rounded-lg shadow-xl w-11/12 max-w-md transform scale-95 opacity-0 modal-content">
                 <h2 id="modal-title" class="text-2xl font-bold text-slate-800 mb-4"></h2>
                 <div id="modal-body" class="text-slate-600 space-y-2"></div>
@@ -39,116 +37,102 @@
                 </div>
             </div>
         </div>
-
-        <!-- Success Modal -->
-        <div id="success-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden">
+        <div id="success-modal" class="fixed inset-0 bg-black bg-opacity-60 items-center justify-center z-50 hidden">
             <div class="bg-white p-8 rounded-lg shadow-xl text-center transform transition-all scale-95 opacity-0 animate-fade-in-up">
                 <h2 class="text-3xl font-bold text-green-600">成交！</h2>
                 <p class="text-lg mt-2 text-slate-700">這工程有勞你了！</p>
             </div>
         </div>
-
-        <!-- Header -->
         <header class="text-center mb-8">
             <h1 class="text-3xl md:text-4xl font-bold text-slate-900">談判思維刻意練習場</h1>
             <p class="text-slate-600 mt-2">在模擬場景中，磨練您的談判技巧</p>
         </header>
 
-        <!-- Start Screen -->
         <div id="start-screen" class="screen active space-y-6">
-            <div id="start-screen-loader" class="text-center"><div class="loader mx-auto"></div><p class="mt-2">正在初始化遊戲...</p></div>
-            <div id="start-screen-content" class="hidden space-y-6">
-                 <div class="bg-white p-6 rounded-lg shadow-md">
-                    <h2 class="text-2xl font-bold mb-4 border-b pb-2">場景設定：商業綜合體總承包</h2>
-                    <p>您將扮演 <span class="font-bold text-sky-600">承包商</span>，與 AI 扮演的 <span class="font-bold text-red-600">業主</span> 就一個新的商業綜合體建設項目進行總承包談判。您的核心利益參數和談判底線（BATNA）如下：</p>
-                </div>
-                <div class="grid md:grid-cols-2 gap-6">
-                    <div class="bg-white p-6 rounded-lg shadow-md">
-                        <h3 class="text-xl font-bold mb-4">您的核心利益參數</h3>
-                        <ul class="space-y-3">
-                           <li><strong>總造價 (元)</strong>: 期望 <span class="text-green-600">10,500,000</span> | 底線 <span class="text-red-600">9,000,000</span></li>
-                           <li><strong>工期 (天)</strong>: 期望 <span class="text-green-600">330</span> | 底線 <span class="text-red-600">240</span></li>
-                           <li><strong>保修期 (年)</strong>: 期望 <span class="text-green-600">1</span> | 底線 <span class="text-red-600">4</span></li>
-                           <li><strong>預付款 (%)</strong>: 期望 <span class="text-green-600">25</span> | 底線 <span class="text-red-600">15</span></li>
-                           <li><strong>附加義務等級</strong>: 期望 <span class="text-green-600">1 (輕度)</span> | 底線 <span class="text-red-600">4 (重度)</span></li>
-                        </ul>
-                    </div>
-                    <div class="bg-white p-6 rounded-lg shadow-md">
-                        <h3 class="text-xl font-bold mb-4">您的 BATNA (最佳替代方案)</h3>
-                        <div class="bg-amber-100 border-l-4 border-amber-500 text-amber-800 p-4 rounded-r-lg">
-                           <p>接受另一個住宅項目合約：</p>
-                           <ul class="list-disc list-inside mt-2">
-                               <li>報價: 9,500,000 元</li>
-                               <li>工期: 300 天</li>
-                               <li>保修期: 2 年</li>
-                               <li>預付款: 15%</li>
-                               <li>附加義務: 等級 2 (一般義務)</li>
-                           </ul>
-                        </div>
-                    </div>
-                </div>
-                 <div class="bg-white p-6 rounded-lg shadow-md">
-                    <h3 class="text-xl font-bold mb-4">附加義務等級定義</h3>
-                    <div id="obligation-definitions-start" class="text-sm space-y-2 text-slate-600"></div>
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-2xl font-bold mb-4 border-b pb-2">場景設定：商業綜合體總承包</h2>
+                <p>您將扮演 <span class="font-bold text-sky-600">承包商</span>，與 AI 扮演的 <span class="font-bold text-red-600">業主</span> 就一個新的商業綜合體建設項目進行總承包談判。您的核心利益參數和談判底線（BATNA）如下：</p>
+            </div>
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-bold mb-4">您的核心利益參數</h3>
+                    <ul class="space-y-3">
+                        <li><strong>總造價 (元)</strong>: 期望 <span class="text-green-600">10,500,000</span> | 底線 <span class="text-red-600">9,000,000</span></li>
+                        <li><strong>工期 (天)</strong>: 期望 <span class="text-green-600">330</span> | 底線 <span class="text-red-600">240</span></li>
+                        <li><strong>保修期 (年)</strong>: 期望 <span class="text-green-600">1</span> | 底線 <span class="text-red-600">4</span></li>
+                        <li><strong>預付款 (%)</strong>: 期望 <span class="text-green-600">25</span> | 底線 <span class="text-red-600">15</span></li>
+                        <li><strong>附加義務等級</strong>: 期望 <span class="text-green-600">1 (輕度)</span> | 底線 <span class="text-red-600">4 (重度)</span></li>
+                    </ul>
                 </div>
                 <div class="bg-white p-6 rounded-lg shadow-md">
-                     <h2 class="text-2xl font-bold mb-4 text-center">開局信息</h2>
-                     <div class="bg-sky-100 border-t-4 border-sky-500 rounded-b text-sky-900 px-4 py-3 shadow-md" role="alert">
-                        <div class="flex">
-                            <div class="py-1"><svg class="fill-current h-6 w-6 text-sky-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zM9 11v4h2v-4H9zm0-4h2v2H9V7z"/></svg></div>
-                            <div>
-                                <p class="font-bold">本次 AI 業主的談判風格為：<span id="ai-style-info" class="text-red-600"></span></p>
-                                <p class="text-sm" id="ai-leaked-info"></p>
-                            </div>
+                    <h3 class="text-xl font-bold mb-4">您的 BATNA (最佳替代方案)</h3>
+                    <div class="bg-amber-100 border-l-4 border-amber-500 text-amber-800 p-4 rounded-r-lg">
+                        <p>接受另一個住宅項目合約：</p>
+                        <ul class="list-disc list-inside mt-2">
+                            <li>報價: 9,500,000 元</li>
+                            <li>工期: 300 天</li>
+                            <li>保修期: 2 年</li>
+                            <li>預付款: 15%</li>
+                            <li>附加義務: 等級 2 (一般義務)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+             <div class="bg-white p-6 rounded-lg shadow-md">
+                <h3 class="text-xl font-bold mb-4">附加義務等級定義</h3>
+                <div id="obligation-definitions-start" class="text-sm space-y-2 text-slate-600"></div>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                 <h2 class="text-2xl font-bold mb-4 text-center">開局信息</h2>
+                 <div class="bg-sky-100 border-t-4 border-sky-500 rounded-b text-sky-900 px-4 py-3 shadow-md" role="alert">
+                    <div class="flex">
+                        <div class="py-1"><svg class="fill-current h-6 w-6 text-sky-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zM9 11v4h2v-4H9zm0-4h2v2H9V7z"/></svg></div>
+                        <div>
+                            <p class="font-bold">本次 AI 業主的談判風格為：<span id="ai-style-info" class="text-red-600"></span></p>
+                            <p class="text-sm" id="ai-leaked-info"></p>
                         </div>
                     </div>
                 </div>
-                <div class="text-center">
-                    <button id="start-game-btn" class="bg-sky-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-sky-700 transition-transform transform hover:scale-105">開始談判</button>
-                </div>
+            </div>
+            <div class="text-center">
+                <button id="start-game-btn" class="bg-sky-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-sky-700 transition-transform transform hover:scale-105 disabled:bg-slate-400" disabled>
+                    正在載入...
+                </button>
             </div>
         </div>
-
-        <!-- Game Screen -->
+        
         <div id="game-screen" class="screen">
              <div class="grid lg:grid-cols-3 gap-6">
-                <!-- Left Panel: Offer Submission -->
                 <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-md">
                     <h2 class="text-2xl font-bold mb-6 border-b pb-3">您的方案</h2>
                     <div id="negotiation-form" class="space-y-6">
-                        <!-- Sliders will be here -->
                         <div>
                             <label for="cost" class="flex justify-between font-medium"><span>總造價 (元)</span><span id="cost-value" class="font-bold text-sky-600"></span></label>
-                            <input type="range" id="cost" min="8500000" max="11000000" step="50000">
+                            <input type="range" id="cost" min="8500000" max="11000000" step="50000" value="10500000">
                         </div>
                         <div>
                             <label for="duration" class="flex justify-between font-medium"><span>工期 (天)</span><span id="duration-value" class="font-bold text-sky-600"></span></label>
-                            <input type="range" id="duration" min="200" max="350" step="5">
+                            <input type="range" id="duration" min="200" max="350" step="5" value="330">
                         </div>
                         <div>
                             <label for="warranty" class="flex justify-between font-medium"><span>保修期 (年)</span><span id="warranty-value" class="font-bold text-sky-600"></span></label>
-                            <input type="range" id="warranty" min="1" max="5" step="1">
+                            <input type="range" id="warranty" min="1" max="5" step="1" value="1">
                         </div>
                         <div>
                             <label for="prepayment" class="flex justify-between font-medium"><span>預付款 (%)</span><span id="prepayment-value" class="font-bold text-sky-600"></span></label>
-                            <input type="range" id="prepayment" min="10" max="30" step="1">
+                            <input type="range" id="prepayment" min="10" max="30" step="1" value="25">
                         </div>
                         <div>
                             <label for="obligation" class="flex justify-between font-medium"><span>附加義務等級</span><span id="obligation-value" class="font-bold text-sky-600"></span></label>
-                            <input type="range" id="obligation" min="1" max="5" step="1">
+                            <input type="range" id="obligation" min="1" max="5" step="1" value="1">
                             <div id="obligation-description-game" class="mt-2 text-sm bg-slate-100 p-3 rounded-md text-slate-700"></div>
                         </div>
                     </div>
                      <div class="mt-8 flex flex-wrap gap-4 items-center">
-                        <button id="submit-offer-btn" class="bg-sky-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-sky-700 transition flex items-center" disabled>
-                            <span id="submit-text">提交方案</span>
-                            <div id="submit-loader" class="hidden ml-2 loader loader-small"></div>
-                        </button>
+                        <button id="submit-offer-btn" class="bg-sky-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-sky-700 transition disabled:bg-slate-400 flex items-center justify-center gap-2">提交方案</button>
                         <button id="end-negotiation-btn" class="bg-red-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-600 transition">放棄談判</button>
                     </div>
                 </div>
-                
-                <!-- Right Panel: Info & AI -->
                 <div class="space-y-6">
                     <div class="bg-white p-4 rounded-lg shadow-md">
                         <h3 class="text-lg font-bold mb-3">業主 (AI) 回應</h3>
@@ -162,14 +146,12 @@
             </div>
         </div>
 
-        <!-- Report Screen -->
         <div id="report-screen" class="screen space-y-6">
              <div id="result-summary" class="p-6 rounded-lg shadow-md text-center">
                 <h2 id="result-title" class="text-4xl font-bold mb-2"></h2>
                 <p id="result-text" class="text-lg"></p>
                 <p class="text-md text-slate-600 mt-2">本次業主的談判風格為: <span id="report-ai-style" class="font-bold"></span></p>
             </div>
-
             <div class="bg-white p-6 rounded-lg shadow-md">
                 <h3 class="text-xl font-bold mb-4">最終方案對比</h3>
                 <div class="overflow-x-auto">
@@ -188,7 +170,6 @@
                     </table>
                 </div>
             </div>
-
             <div class="grid md:grid-cols-3 gap-6">
                 <div class="md:col-span-2 bg-white p-6 rounded-lg shadow-md">
                     <h3 class="text-xl font-bold mb-4">"成交區間"可視化分析 (ZOPA)</h3>
@@ -205,12 +186,10 @@
                     </div>
                 </div>
             </div>
-            
             <div class="bg-white p-6 rounded-lg shadow-md">
                 <h3 class="text-xl font-bold mb-4">智能提示</h3>
                 <div id="smart-tips" class="bg-sky-100 border-l-4 border-sky-500 text-sky-800 p-4 rounded-r-lg space-y-2"></div>
             </div>
-
             <div class="text-center mt-6">
                  <button id="play-again-btn" class="bg-sky-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-sky-700 transition-transform transform hover:scale-105">再玩一次</button>
             </div>
@@ -262,13 +241,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (key === 'cost') {
             displayValue = parseInt(value).toLocaleString();
         } else if (key === 'obligation') {
-            // This is the line that was causing the error. We ensure OBLIGATION_LEVELS exists.
             if (OBLIGATION_LEVELS && OBLIGATION_LEVELS[value]) {
                 displayValue = `${value} (${OBLIGATION_LEVELS[value].name})`;
                 displays.obligationDescGame.textContent = `等級 ${value}: ${OBLIGATION_DEFS[value]}`;
             }
         }
-        displays[`${key}Value`].textContent = displayValue;
+        if (displays[`${key}Value`]) {
+            displays[`${key}Value`].textContent = displayValue;
+        }
     }
     function toggleButtonLoading(button, isLoading) {
         if (isLoading) {
@@ -288,12 +268,16 @@ document.addEventListener('DOMContentLoaded', () => {
         buttons.startGame.textContent = '正在載入...';
         
         const data = await apiCall('init');
+        
         if (data) {
             gameStateToken = data.token;
             displays.aiStyleInfo.textContent = data.aiStyleName;
             displays.aiLeakedInfo.innerHTML = data.leakedInfoHTML;
             buttons.startGame.disabled = false;
             buttons.startGame.textContent = '開始談判';
+        } else {
+            // If API call fails, stop the loading state
+            buttons.startGame.textContent = '載入失敗，請刷新';
         }
 
         displays.obligationDefsStart.innerHTML = Object.entries(OBLIGATION_DEFS).map(([i, desc]) => `<p><span class="font-bold">等級 ${i} (${OBLIGATION_LEVELS[i].name}):</span> ${desc}</p>`).join('');
@@ -311,7 +295,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = await apiCall('submit', { token: gameStateToken, offer });
         
         if (data) {
-            gameStateToken = data.token; // Update token for next round
+            gameStateToken = data.token;
             if (data.isDeal) {
                 showSuccessAndReport(data.reportData);
             } else {
@@ -325,11 +309,15 @@ document.addEventListener('DOMContentLoaded', () => {
         displays.successModal.classList.remove('hidden');
         displays.successModal.classList.add('flex');
         setTimeout(() => { 
-            displays.successModal.querySelector('div').classList.add('scale-100', 'opacity-100');
+            if(displays.successModal.querySelector('div')) {
+               displays.successModal.querySelector('div').classList.add('scale-100', 'opacity-100');
+            }
         }, 10);
         
         setTimeout(() => {
-            displays.successModal.querySelector('div').classList.remove('scale-100', 'opacity-100');
+             if(displays.successModal.querySelector('div')) {
+                displays.successModal.querySelector('div').classList.remove('scale-100', 'opacity-100');
+             }
             setTimeout(() => {
                 displays.successModal.classList.add('hidden');
                 displays.successModal.classList.remove('flex');
@@ -359,7 +347,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Event Listeners ---
-    buttons.startGame.addEventListener('click', () => switchScreen('game'));
+    buttons.startGame.addEventListener('click', () => {
+        displays.aiResponse.innerHTML = '等待您提交第一個方案...';
+        switchScreen('game');
+    });
     buttons.submitOffer.addEventListener('click', handleSubmitOffer);
     buttons.endNegotiation.addEventListener('click', handleEndNegotiation);
     buttons.playAgain.addEventListener('click', init);
@@ -379,13 +370,16 @@ document.addEventListener('DOMContentLoaded', () => {
         showModal('您的 BATNA (最佳替代方案)', batnaHTML);
     });
     buttons.modalClose.addEventListener('click', hideModal);
-    Object.entries(inputs).forEach(([key, input]) => input.addEventListener('input', (e) => updateSliderValue(key, e.target.value)));
+    Object.entries(inputs).forEach(([key, input]) => {
+        if(input) {
+            input.addEventListener('input', (e) => updateSliderValue(key, e.target.value));
+        }
+    });
 
     // --- Initial Load ---
     init();
 });
 </script>
+
 </body>
 </html>
-
-
