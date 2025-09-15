@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>大學生情境談判練習場 / Student Negotiation Sandbox</title>
+    <title>情境談判模擬沙盒 / Scenario Negotiation Sandbox</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -30,6 +30,7 @@
 <body class="bg-slate-100 text-slate-800">
 
     <div id="app" class="container mx-auto p-4 md:p-8 max-w-5xl">
+        
         <div id="modal" class="fixed inset-0 bg-black bg-opacity-60 items-center justify-center z-50 hidden modal-overlay">
             <div class="bg-white p-6 rounded-lg shadow-xl w-11/12 max-w-md transform scale-95 opacity-0 modal-content">
                 <h2 id="modal-title" class="text-2xl font-bold text-slate-800 mb-1"></h2>
@@ -40,26 +41,27 @@
                 </div>
             </div>
         </div>
+
         <div id="success-modal" class="fixed inset-0 bg-black bg-opacity-60 items-center justify-center z-50 hidden">
             <div class="bg-white p-8 rounded-lg shadow-xl text-center transform transition-all scale-95 opacity-0 animate-fade-in-up">
-                <h2 class="text-3xl font-bold text-green-600">達成共識！</h2>
-                <p class="en-text text-green-500">Agreement Reached!</p>
-                <p class="text-lg mt-2 text-slate-700">合作愉快！</p>
-                <p class="en-text">Pleasure working with you!</p>
+                <h2 id="success-modal-title" class="text-3xl font-bold text-green-600"></h2>
+                <p id="success-modal-title-en" class="en-text text-green-500"></p>
+                <p id="success-modal-text" class="text-lg mt-2 text-slate-700"></p>
+                <p id="success-modal-text-en" class="en-text"></p>
             </div>
         </div>
+
         <header class="text-center mb-8">
-            <h1 class="text-3xl md:text-4xl font-bold text-slate-900">大學生情境談判練習場</h1>
-            <p class="en-text -mt-1">Student Negotiation Sandbox</p>
-            <p class="text-slate-600 mt-2">在模擬的大學與職場場景中，磨練您的談判技巧</p>
-            <p class="en-text">Hone your negotiation skills in simulated university and workplace environments</p>
+            <h1 class="text-3xl md:text-4xl font-bold text-slate-900">情境談判模擬沙盒</h1>
+            <p class="en-text -mt-1">Scenario Negotiation Sandbox</p>
+            <p class="text-slate-600 mt-2">在模擬場景中，磨練您的談判技巧</p>
+            <p class="en-text">Hone your negotiation skills in a simulated environment</p>
         </header>
 
         <div id="instruction-screen" class="screen active space-y-6">
             <div class="bg-white p-6 rounded-lg shadow-md">
-                <h2 class="text-2xl font-bold mb-1">歡迎來到情境談判練習場</h2>
-                <p class="en-text -mt-1 mb-4">Welcome to the Scenario Negotiation Sandbox</p>
-                
+                <h2 class="text-2xl font-bold mb-1">歡迎來到談判練習場</h2>
+                <p class="en-text -mt-1 mb-4">Welcome to the Negotiation Sandbox</p>
                 <div class="space-y-4">
                     <div>
                         <h3 class="text-lg font-bold text-sky-700">遊戲目標 (Game Goal)</h3>
@@ -69,26 +71,38 @@
                     <div>
                         <h3 class="text-lg font-bold text-sky-700">行為準則 (Rules of Conduct)</h3>
                         <ul class="list-disc list-inside space-y-1 mt-1 text-slate-600">
-                            <li><b>五輪挑戰 (Five Rounds Challenge):</b> 您將面對五位風格各異的 HR，請盡力在每一輪中達成最佳協議。</li>
+                            <li><b>五輪挑戰 (Five Rounds Challenge):</b> 您將面對五位風格各異的對手，請盡力在每一輪中達成最佳協議。</li>
                             <li><b>時間壓力 (Time Pressure):</b> 每輪談判限時 **5 分鐘**，超時將導致談判破裂。</li>
                             <li><b>深思熟慮 (Think Carefully):</b> 兩次提交方案之間需間隔 **30 秒**。過於倉促的決策將被記錄為「非理性思考」。</li>
                             <li><b>避免過度讓步 (Avoid Over-concession):</b> 做出遠超對手期望的讓步會被記錄，並影響您的滿意度評分。</li>
                         </ul>
                     </div>
-                    <div>
-                        <h3 class="text-lg font-bold text-sky-700">操作步驟 (How to Play)</h3>
-                        <ol class="list-decimal list-inside space-y-1 mt-1 text-slate-600">
-                           <li><b>閱讀開局信息 (Read Initial Info):</b> 點擊下方按鈕，仔細閱讀您的目標及對手情報。</li>
-                           <li><b>開始談判 (Start Negotiating):</b> 點擊「開始談判」按鈕進入談判室。</li>
-                           <li><b>調整與提交 (Adjust & Submit):</b> 使用滑桿調整方案，點擊「提交方案」。</li>
-                           <li><b>複盤與總結 (Review & Summarize):</b> 每輪結束後查看報告，五輪後將提供總結。</li>
-                        </ol>
-                    </div>
                 </div>
             </div>
             <div class="text-center">
-                <button id="accept-instructions-btn" class="bg-sky-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-sky-700 transition-transform transform hover:scale-105">
-                    我明白了，進入練習輪 <span class="text-sky-200 ml-1">I Understand, Start Practice Round</span>
+                <button id="go-to-theme-selection-btn" class="bg-sky-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-sky-700 transition-transform transform hover:scale-105">
+                    我明白了，請選擇模擬情境 <span class="text-sky-200 ml-1">I Understand, Please Select a Scenario</span>
+                </button>
+            </div>
+        </div>
+
+        <div id="theme-selection-screen" class="screen space-y-6">
+            <div class="bg-white p-6 rounded-lg shadow-md text-center">
+                <h2 class="text-2xl font-bold mb-1">請選擇一個談判情境</h2>
+                <p class="en-text -mt-1 mb-4">Please Choose a Negotiation Scenario</p>
+            </div>
+            <div class="grid md:grid-cols-2 gap-6 text-center">
+                <button data-theme="student" class="theme-btn bg-white p-6 rounded-lg shadow-md hover:shadow-xl hover:scale-105 transition-transform duration-300">
+                    <h3 class="text-2xl font-bold text-sky-700">大學生情境</h3>
+                    <p class="en-text">Student Scenarios</p>
+                    <p class="mt-4 text-slate-600">模擬小組報告分工、爭取實習 Offer 等校園與職場銜接的談判挑戰。</p>
+                    <p class="en-text text-slate-500">Simulate challenges like group projects and internship offer negotiations.</p>
+                </button>
+                <button data-theme="contractor" class="theme-btn bg-white p-6 rounded-lg shadow-md hover:shadow-xl hover:scale-105 transition-transform duration-300">
+                    <h3 class="text-2xl font-bold text-emerald-700">營建業情境</h3>
+                    <p class="en-text">Contractor Scenarios</p>
+                    <p class="mt-4 text-slate-600">模擬辦公室裝修、商業綜合體總承包等工程領域的商業談判。</p>
+                    <p class="en-text text-slate-500">Simulate business negotiations in construction, such as renovations and general contracting.</p>
                 </button>
             </div>
         </div>
@@ -113,8 +127,8 @@
                 </div>
             </div>
             <div class="bg-white p-6 rounded-lg shadow-md">
-                <h3 class="text-xl font-bold mb-1">專案主導權等級定義</h3>
-                <p class="en-text -mt-1 mb-4">Project Autonomy Level Definitions</p>
+                <h3 id="obligation-title" class="text-xl font-bold mb-1"></h3>
+                <p id="obligation-title-en" class="en-text -mt-1 mb-4"></p>
                 <div id="obligation-definitions-start" class="text-sm space-y-2 text-slate-600"></div>
             </div>
             <div class="bg-white p-6 rounded-lg shadow-md">
@@ -127,8 +141,7 @@
                 </div></div></div>
             </div>
             <div class="text-center">
-                <button id="start-game-btn" class="bg-sky-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-sky-700 transition-transform transform hover:scale-105 disabled:bg-slate-400 flex items-center justify-center">
-                    </button>
+                <button id="start-game-btn" class="bg-sky-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-sky-700 transition-transform transform hover:scale-105 disabled:bg-slate-400 flex items-center justify-center"></button>
             </div>
         </div>
         
@@ -143,8 +156,8 @@
                     <div id="timer" class="text-2xl font-bold text-red-600">05:00</div>
                 </div>
             </div>
-            <div id="negotiation-form" class="space-y-6">
-                </div><div class="mt-8 flex flex-wrap gap-4 items-center"><button id="submit-offer-btn" class="bg-sky-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-sky-700 transition disabled:bg-slate-400 flex items-center justify-center gap-2">提交方案 <span class="text-sky-200">Submit</span></button><button id="end-negotiation-btn" class="bg-red-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-600 transition">放棄談判 <span class="text-red-200">End</span></button></div></div><div class="space-y-6"><div class="bg-white p-4 rounded-lg shadow-md">
+            <div id="negotiation-form" class="space-y-6"></div>
+            <div class="mt-8 flex flex-wrap gap-4 items-center"><button id="submit-offer-btn" class="bg-sky-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-sky-700 transition disabled:bg-slate-400 flex items-center justify-center gap-2">提交方案 <span class="text-sky-200">Submit</span></button><button id="end-negotiation-btn" class="bg-red-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-600 transition">放棄談判 <span class="text-red-200">End</span></button></div></div><div class="space-y-6"><div class="bg-white p-4 rounded-lg shadow-md">
             <h3 id="ai-opponent-title" class="text-lg font-bold mb-1"></h3>
             <p id="ai-opponent-title-en" class="en-text -mt-1 mb-3"></p>
             <div id="ai-response" class="min-h-[100px] bg-slate-100 p-3 rounded-md text-slate-700 italic">
@@ -160,14 +173,7 @@
         <div id="report-screen" class="screen space-y-6"><div id="result-summary" class="p-6 rounded-lg shadow-md text-center"><h2 id="result-title" class="text-4xl font-bold mb-2"></h2><p id="result-text" class="text-lg"></p><p class="text-md text-slate-600 mt-2">本次對方的談判風格為 (Opponent's negotiation style): <span id="report-ai-style" class="font-bold"></span></p></div><div class="bg-white p-6 rounded-lg shadow-md">
             <h3 class="text-xl font-bold mb-1">最終方案對比</h3>
             <p class="en-text -mt-1 mb-4">Final Offer Comparison</p>
-            <div class="overflow-x-auto"><table class="w-full text-sm text-left"><thead class="bg-slate-100"><tr>
-                <th class="p-3">參數<p class="en-text font-normal">Parameter</p></th>
-                <th class="p-3 text-sky-600">您的最終方案<p class="en-text font-normal">Your Final Offer</p></th>
-                <th class="p-3 text-green-600">您的期望<p class="en-text font-normal">Your Expectation</p></th>
-                <th class="p-3 text-red-600">您的底線<p class="en-text font-normal">Your Reserve</p></th>
-                <th class="p-3 text-red-600">對方底線<p class="en-text font-normal">Opponent's Reserve</p></th>
-                <th class="p-3 text-green-600">對方期望<p class="en-text font-normal">Opponent's Expectation</p></th>
-            </tr></thead><tbody id="report-table-body"></tbody></table></div></div><div class="grid md:grid-cols-3 gap-6"><div class="md:col-span-2 bg-white p-6 rounded-lg shadow-md">
+            <div class="overflow-x-auto"><table class="w-full text-sm text-left"><thead id="report-table-head" class="bg-slate-100"></thead><tbody id="report-table-body"></tbody></table></div></div><div class="grid md:grid-cols-3 gap-6"><div class="md:col-span-2 bg-white p-6 rounded-lg shadow-md">
             <h3 class="text-xl font-bold mb-1">"成交區間"可視化分析 (ZOPA)</h3>
             <p class="en-text -mt-1 mb-4">Zone of Possible Agreement (ZOPA) Analysis</p>
             <div id="deal-zone-analysis" class="space-y-2"></div></div><div class="space-y-6"><div class="bg-white p-6 rounded-lg shadow-md">
@@ -197,49 +203,54 @@
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm text-left">
-                        <thead class="bg-slate-100">
-                            <tr>
-                                <th class="p-3">HR 談判風格<p class="en-text font-normal">Style</p></th>
-                                <th class="p-3">結果<p class="en-text font-normal">Result</p></th>
-                                <th class="p-3">Offer 內容<p class="en-text font-normal">Offer Terms</p></th>
-                                <th class="p-3">對話輪次<p class="en-text font-normal">Rounds</p></th>
-                                <th class="p-3">BATNA 查看<p class="en-text font-normal">BATNA Views</p></th>
-                                <th class="p-3">過度讓步<p class="en-text font-normal">Over-concessions</p></th>
-                                <th class="p-3">非理性思考<p class="en-text font-normal">Irrational Moves</p></th>
-                                <th class="p-3">您的滿意度<p class="en-text font-normal">Your Score</p></th>
-                                <th class="p-3">HR 滿意度<p class="en-text font-normal">HR's Score</p></th>
-                            </tr>
-                        </thead>
-                        <tbody id="final-summary-table-body">
-                        </tbody>
+                        <thead id="final-summary-table-head" class="bg-slate-100"></thead>
+                        <tbody id="final-summary-table-body"></tbody>
                     </table>
                 </div>
             </div>
+            <div id="discussion-container" class="bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-2xl font-bold text-slate-800 mb-1">情境反思與討論</h2>
+                <p class="en-text -mt-1 mb-4">Scenario Reflection & Discussion</p>
+                <div id="discussion-questions" class="space-y-4 text-slate-700"></div>
+            </div>
             <div class="text-center mt-6">
-                <button id="restart-series-btn" class="bg-sky-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-sky-700 transition-transform transform hover:scale-105">重新開始新系列 <span class="text-sky-200">Restart Series</span></button>
+                <button id="restart-series-btn" class="bg-sky-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-sky-700 transition-transform transform hover:scale-105">返回主選單 <span class="text-sky-200">Back to Main Menu</span></button>
             </div>
         </div>
     </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    const screens = { instruction: document.getElementById('instruction-screen'), scene: document.getElementById('scene-screen'), game: document.getElementById('game-screen'), report: document.getElementById('report-screen'), finalSummary: document.getElementById('final-summary-screen') };
-    const buttons = { acceptInstructions: document.getElementById('accept-instructions-btn'), startGame: document.getElementById('start-game-btn'), submitOffer: document.getElementById('submit-offer-btn'), endNegotiation: document.getElementById('end-negotiation-btn'), viewBatna: document.getElementById('view-batna-btn'), nextRound: document.getElementById('next-round-btn'), viewSummary: document.getElementById('view-summary-btn'), restartSeries: document.getElementById('restart-series-btn'), modalClose: document.getElementById('modal-close-btn') };
+    const screens = { instruction: document.getElementById('instruction-screen'), themeSelection: document.getElementById('theme-selection-screen'), scene: document.getElementById('scene-screen'), game: document.getElementById('game-screen'), report: document.getElementById('report-screen'), finalSummary: document.getElementById('final-summary-screen') };
+    const buttons = { 
+        goToThemeSelection: document.getElementById('go-to-theme-selection-btn'),
+        themeBtns: document.querySelectorAll('.theme-btn'),
+        startGame: document.getElementById('start-game-btn'), 
+        submitOffer: document.getElementById('submit-offer-btn'), 
+        endNegotiation: document.getElementById('end-negotiation-btn'), 
+        viewBatna: document.getElementById('view-batna-btn'), 
+        nextRound: document.getElementById('next-round-btn'), 
+        viewSummary: document.getElementById('view-summary-btn'), 
+        restartSeries: document.getElementById('restart-series-btn'), 
+        modalClose: document.getElementById('modal-close-btn') 
+    };
     const displays = {
         sceneTitle: document.getElementById('scene-title'), sceneTitleEn: document.getElementById('scene-title-en'), sceneDescription: document.getElementById('scene-description'), sceneDescriptionEn: document.getElementById('scene-description-en'),
         sceneUserParams: document.getElementById('scene-user-params'), sceneUserBatna: document.getElementById('scene-user-batna'),
         negotiationForm: document.getElementById('negotiation-form'),
+        obligationTitle: document.getElementById('obligation-title'), obligationTitleEn: document.getElementById('obligation-title-en'),
         obligationDefsStart: document.getElementById('obligation-definitions-start'), aiResponse: document.getElementById('ai-response'), 
         aiOpponentTitle: document.getElementById('ai-opponent-title'), aiOpponentTitleEn: document.getElementById('ai-opponent-title-en'),
         aiStyleInfo: document.getElementById('ai-style-info'), aiStyleInfoEn: document.getElementById('ai-style-info-en'), aiLeakedInfo: document.getElementById('ai-leaked-info'),
-        resultTitle: document.getElementById('result-title'), resultText: document.getElementById('result-text'), reportAiStyle: document.getElementById('report-ai-style'), reportTableBody: document.getElementById('report-table-body'),
+        resultTitle: document.getElementById('result-title'), resultText: document.getElementById('result-text'), reportAiStyle: document.getElementById('report-ai-style'), 
+        reportTableHead: document.getElementById('report-table-head'), reportTableBody: document.getElementById('report-table-body'),
         dealZoneAnalysis: document.getElementById('deal-zone-analysis'), behaviorStats: document.getElementById('behavior-stats'), satisfactionScores: document.getElementById('satisfaction-scores'), smartTips: document.getElementById('smart-tips'),
-        successModal: document.getElementById('success-modal'), modal: document.getElementById('modal'), modalTitle: document.getElementById('modal-title'), modalTitleEn: document.getElementById('modal-title-en'), modalBody: document.getElementById('modal-body'),
-        infoBox: document.getElementById('info-box'),
-        finalSummaryTableBody: document.getElementById('final-summary-table-body'),
+        successModal: document.getElementById('success-modal'), successModalTitle: document.getElementById('success-modal-title'), successModalTitleEn: document.getElementById('success-modal-title-en'), successModalText: document.getElementById('success-modal-text'), successModalTextEn: document.getElementById('success-modal-text-en'),
+        modal: document.getElementById('modal'), modalTitle: document.getElementById('modal-title'), modalTitleEn: document.getElementById('modal-title-en'), modalBody: document.getElementById('modal-body'),
+        finalSummaryTableHead: document.getElementById('final-summary-table-head'), finalSummaryTableBody: document.getElementById('final-summary-table-body'),
         timer: document.getElementById('timer'),
-        finalScore: document.getElementById('final-score'),
-        finalScoreLogic: document.getElementById('final-score-logic'),
+        finalScore: document.getElementById('final-score'), finalScoreLogic: document.getElementById('final-score-logic'),
+        discussionQuestions: document.getElementById('discussion-questions')
     };
     
     let gameStateToken = null;
@@ -271,13 +282,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function switchScreen(screenName) { Object.values(screens).forEach(s => s.classList.remove('active')); screens[screenName].classList.add('active'); }
-    function showModal(title, title_en, bodyHTML) { 
-        displays.modal.classList.remove('hidden'); displays.modal.classList.add('flex'); 
-        displays.modalTitle.textContent = title; 
-        displays.modalTitleEn.textContent = title_en;
-        displays.modalBody.innerHTML = bodyHTML; 
-        setTimeout(() => { if (displays.modal.querySelector('.modal-content')) displays.modal.querySelector('.modal-content').classList.remove('scale-95', 'opacity-0'); }, 10); 
-    }
+    function showModal(title, title_en, bodyHTML) { displays.modal.classList.remove('hidden'); displays.modal.classList.add('flex'); displays.modalTitle.textContent = title; displays.modalTitleEn.textContent = title_en; displays.modalBody.innerHTML = bodyHTML; setTimeout(() => { if (displays.modal.querySelector('.modal-content')) displays.modal.querySelector('.modal-content').classList.remove('scale-95', 'opacity-0'); }, 10); }
     function hideModal() { if (displays.modal.querySelector('.modal-content')) displays.modal.querySelector('.modal-content').classList.add('scale-95', 'opacity-0'); setTimeout(() => {displays.modal.classList.add('hidden'); displays.modal.classList.remove('flex');}, 300); }
     
     function updateSliderValue(key, value) {
@@ -285,7 +290,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let displayValue = value;
         
         if (paramConfig.format === 'currency') { displayValue = parseInt(value).toLocaleString(); }
-        else if (paramConfig.format === 'percent') { displayValue = `${value}%`; }
+        else if (paramConfig.format === 'percent' || paramConfig.unit === '%') { displayValue = `${value}%`; }
         else if (paramConfig.format === 'level' && paramConfig.levels) {
             const levelInfo = paramConfig.levels[value];
             displayValue = levelInfo ? `${value} (${levelInfo.name} / ${levelInfo.en_name})` : value;
@@ -303,9 +308,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!button) return;
         if (isLoading) {
             button.disabled = true;
-            if (!button.dataset.originalText) {
-                 button.dataset.originalText = button.innerHTML;
-            }
+            if (!button.dataset.originalText) button.dataset.originalText = button.innerHTML;
             button.innerHTML = `<div class="loading-spinner"></div>`;
         } else {
             button.disabled = false;
@@ -324,7 +327,6 @@ document.addEventListener('DOMContentLoaded', () => {
         stopTimer(); 
         let timeLeft = 300; // 5 minutes
         displays.timer.textContent = "05:00";
-
         timerInterval = setInterval(() => {
             timeLeft--;
             const minutes = Math.floor(timeLeft / 60);
@@ -345,17 +347,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const param = params[key];
             const config = sliderConfig[key];
             const initialValue = initialOffer[key];
-
             formHTML += `<div><label for="${key}" class="flex justify-between font-medium"><span>${param.name} (${param.en_name})</span><span id="${key}-value" class="font-bold text-sky-600"></span></label>
             <input type="range" id="${key}" min="${config.min}" max="${config.max}" step="${config.step}" value="${initialValue}">`;
-            
             if (param.format === 'level') {
                  formHTML += `<div id="${key}-description-game" class="mt-2 text-sm bg-slate-100 p-3 rounded-md text-slate-700"></div>`;
             }
             formHTML += `</div>`;
         }
         displays.negotiationForm.innerHTML = formHTML;
-        
         currentInputs = {};
         for (const key in params) {
             currentInputs[key] = document.getElementById(key);
@@ -364,19 +363,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    async function init(token = null) {
+    async function init(payload) {
         switchScreen('scene');
+        buttons.themeBtns.forEach(btn => btn.disabled = true);
         toggleButtonLoading(buttons.startGame, true);
         
-        const data = await apiCall('init', { token });
+        const data = await apiCall('init', payload);
         
         if (data) {
             if(data.isGameOver) {
-                renderFinalSummary(data.gameHistory, data.finalScore);
+                renderFinalSummary(data.gameHistory, data.finalScore, data.discussionQuestions, data.finalSummaryTableHeadHTML);
                 return;
             }
             gameStateToken = data.token;
-            obligationDefs = data.obligationDefs || {};
+            obligationDefs = data.scene.obligationDefs || {};
 
             displays.sceneTitle.textContent = data.scene.title;
             displays.sceneTitleEn.textContent = data.scene.en_title;
@@ -391,6 +391,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             displays.aiOpponentTitle.textContent = data.scene.aiOpponent.name;
             displays.aiOpponentTitleEn.textContent = data.scene.aiOpponent.en_name;
+
+            displays.obligationTitle.innerHTML = data.scene.obligationTitle;
+            displays.obligationTitleEn.innerHTML = data.scene.obligationTitleEn;
+            displays.obligationDefsStart.innerHTML = Object.entries(obligationDefs).map(([i, desc]) => {
+                const levelKey = Object.keys(data.scene.userParams).find(k => data.scene.userParams[k].format === 'level');
+                const levelInfo = data.scene.userParams[levelKey]?.levels?.[i] || { name: '', en_name: '' };
+                return `<p><span class="font-bold">等級 ${i} (${levelInfo.name} / ${levelInfo.en_name}):</span> ${desc}</p>`
+            }).join('');
             
             createSliders(data.scene.userParams, data.sliderConfig, data.initialOffer);
             
@@ -399,12 +407,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 : `開始第 ${data.roundNum} / 5 輪 <span class="text-sky-200 ml-1">Start Round ${data.roundNum}/5</span>`;
             toggleButtonLoading(buttons.startGame, false, buttonText);
         }
-
-        displays.obligationDefsStart.innerHTML = Object.entries(obligationDefs).map(([i, desc]) => {
-            const levelInfo = data.scene.userParams['autonomy']?.levels?.[i] || { name: '', en_name: '' };
-            return `<p><span class="font-bold">等級 ${i} (${levelInfo.name} / ${levelInfo.en_name}):</span> ${desc}</p>`
-        }).join('');
-
+        buttons.themeBtns.forEach(btn => btn.disabled = false);
         displays.aiResponse.innerHTML = '等待您提交第一個方案...<p class="en-text">Waiting for your first offer...</p>';
     }
 
@@ -419,10 +422,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data) gameStateToken = data.token;
             return;
         }
-
         lastSubmitTimestamp = now;
         toggleButtonLoading(buttons.submitOffer, true);
-        const offer = Object.fromEntries(Object.entries(currentInputs).map(([key, input]) => [key, parseInt(input.value)]));
+        const offer = Object.fromEntries(Object.entries(currentInputs).map(([key, input]) => [key, parseFloat(input.value)]));
         const data = await apiCall('submit', { token: gameStateToken, offer });
         if (data) {
             gameStateToken = data.token;
@@ -437,6 +439,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showSuccessAndReport(reportData) {
+        displays.successModalTitle.innerHTML = reportData.successModal.title;
+        displays.successModalTitleEn.innerHTML = reportData.successModal.en_title;
+        displays.successModalText.innerHTML = reportData.successModal.text;
+        displays.successModalTextEn.innerHTML = reportData.successModal.en_text;
         displays.successModal.classList.remove('hidden');
         displays.successModal.classList.add('flex');
         setTimeout(() => { if (displays.successModal.querySelector('div')) displays.successModal.querySelector('div').classList.remove('scale-95', 'opacity-0'); }, 10);
@@ -452,7 +458,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     async function handleEndNegotiation() {
         stopTimer();
-        const offer = Object.fromEntries(Object.entries(currentInputs).map(([key, input]) => [key, parseInt(input.value)]));
+        const offer = Object.fromEntries(Object.entries(currentInputs).map(([key, input]) => [key, parseFloat(input.value)]));
         const data = await apiCall('end', { token: gameStateToken, offer });
         if (data) {
              gameStateToken = data.token;
@@ -464,41 +470,38 @@ document.addEventListener('DOMContentLoaded', () => {
         displays.resultTitle.textContent = data.isSuccess ? '談判成功！' : '談判破裂';
         displays.resultText.innerHTML = data.resultText;
         displays.reportAiStyle.innerHTML = data.aiStyleName;
-        displays.reportTableBody.innerHTML = data.reportTableHTML;
+        displays.reportTableHead.innerHTML = data.reportTableHeadHTML;
+        displays.reportTableBody.innerHTML = data.reportTableBodyHTML;
         displays.dealZoneAnalysis.innerHTML = data.dealZoneAnalysisHTML;
         displays.behaviorStats.innerHTML = data.behaviorStatsHTML;
         displays.satisfactionScores.innerHTML = data.satisfactionScoresHTML;
         displays.smartTips.innerHTML = data.smartTipsHTML;
-        
         if (data.isPracticeRoundOver) {
             buttons.nextRound.innerHTML = '開始正式挑戰 <span class="text-sky-200">Start Official Challenge</span>';
         } else {
             buttons.nextRound.innerHTML = '下一輪 <span class="text-sky-200">Next Round</span>';
         }
-
         if (data.isGameOver) {
             buttons.nextRound.classList.add('hidden');
             buttons.viewSummary.classList.remove('hidden');
-            buttons.viewSummary.onclick = () => renderFinalSummary(data.gameHistory, data.finalScore);
+            buttons.viewSummary.onclick = () => renderFinalSummary(data.gameHistory, data.finalScore, data.discussionQuestions, data.finalSummaryTableHeadHTML);
         } else {
             buttons.nextRound.classList.remove('hidden');
             buttons.viewSummary.classList.add('hidden');
         }
-        
         switchScreen('report');
     }
 
-    function renderFinalSummary(gameHistory, finalScore) {
+    function renderFinalSummary(gameHistory, finalScore, discussionQuestions, finalSummaryTableHeadHTML) {
         displays.finalScore.textContent = `${finalScore.score} / 100`;
         displays.finalScoreLogic.innerHTML = finalScore.logic;
+        displays.finalSummaryTableHead.innerHTML = finalSummaryTableHeadHTML;
         displays.finalSummaryTableBody.innerHTML = gameHistory.map(round => {
             const resultClass = round.isSuccess ? 'text-green-600' : 'text-red-600';
             const userScore = round.satisfaction.user !== '--' ? `${round.satisfaction.user} / 10` : '--';
             const aiScore = round.satisfaction.ai !== '--' ? `${round.satisfaction.ai} / 10` : '--';
-            
             const dealTerms = round.isSuccess && round.finalOfferHTML ? round.finalOfferHTML : '--';
             const overConcessionCount = round.satisfaction.penaltyReasons ? round.satisfaction.penaltyReasons.length : 0;
-
             return `<tr class="border-b">
                 <td class="p-3 font-medium">${round.styleName}<p class="en-text">${round.en_styleName}</p></td>
                 <td class="p-3 font-bold ${resultClass}">${round.isSuccess ? '談成' : '破裂'}<p class="en-text font-normal">${round.isSuccess ? 'Deal' : 'No Deal'}</p></td>
@@ -511,19 +514,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td class="p-3">${aiScore}</td>
             </tr>`;
         }).join('');
+        displays.discussionQuestions.innerHTML = discussionQuestions;
         switchScreen('finalSummary');
     }
 
-    buttons.acceptInstructions.addEventListener('click', () => init(null));
-    buttons.startGame.addEventListener('click', () => { 
-        lastSubmitTimestamp = Date.now();
-        switchScreen('game'); 
-        startTimer();
+    buttons.goToThemeSelection.addEventListener('click', () => switchScreen('themeSelection'));
+    buttons.themeBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const theme = btn.dataset.theme;
+            init({ theme });
+        });
     });
+    buttons.startGame.addEventListener('click', () => { lastSubmitTimestamp = Date.now(); switchScreen('game'); startTimer(); });
     buttons.submitOffer.addEventListener('click', handleSubmitOffer);
     buttons.endNegotiation.addEventListener('click', handleEndNegotiation);
-    buttons.nextRound.addEventListener('click', () => init(gameStateToken));
-    buttons.restartSeries.addEventListener('click', () => init(null));
+    buttons.nextRound.addEventListener('click', () => init({ token: gameStateToken }));
+    buttons.restartSeries.addEventListener('click', () => { gameStateToken = null; switchScreen('instruction'); });
     buttons.viewBatna.addEventListener('click', async () => {
         const data = await apiCall('viewBatna', { token: gameStateToken });
         if (data) {
