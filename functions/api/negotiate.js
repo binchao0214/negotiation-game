@@ -1,5 +1,4 @@
 // --- Core Game Logic and Configuration (Protected on Server) ---
-
 const OBLIGATION_LEVELS = { 1: { name: '輕度義務' }, 2: { name: '一般義務' }, 3: { name: '中度義務' }, 4: { name: '重度義務' }, 5: { name: '全面義務' } };
 const BASE_PARAMS = {
     user: {
@@ -19,30 +18,16 @@ const AI_STYLES = {
 };
 
 // --- Helper Functions (Server-Side) ---
-
-// Helper function to safely encode state to Base64
 function encodeState(state) {
-    try {
-        const jsonString = JSON.stringify(state);
-        return Buffer.from(jsonString).toString('base64');
-    } catch (e) {
-        console.error("Failed to encode state:", e);
-        return '';
-    }
+    const jsonString = JSON.stringify(state);
+    return Buffer.from(jsonString).toString('base64');
 }
-
-// Helper function to safely decode state from Base64
 function decodeState(token) {
     try {
         const jsonString = Buffer.from(token, 'base64').toString('utf-8');
         return JSON.parse(jsonString);
-    } catch (e) {
-        console.error("Failed to decode token:", e);
-        return null;
-    }
+    } catch (e) { return null; }
 }
-
-
 function generateDynamicParams(styleKey) {
     const flexibilityFactors = { tough: 0.4, horseTrader: 0.6, fair: 0.8, key: 0.7, accommodating: 1.0 };
     const baseAiParams = {
@@ -54,7 +39,6 @@ function generateDynamicParams(styleKey) {
     };
     const newAiParams = JSON.parse(JSON.stringify(baseAiParams));
     const factor = flexibilityFactors[styleKey] || 0.8;
-
     for (const key in newAiParams) {
         const param = newAiParams[key];
         const originalRange = Math.abs(param.reserve - param.expect);
@@ -67,7 +51,6 @@ function generateDynamicParams(styleKey) {
     }
     return newAiParams;
 }
-
 function isWithinZOPA(key, value, userReserve, aiReserve) {
     if (key === 'cost' || key === 'prepayment' || key === 'duration') {
         return value >= userReserve && value <= aiReserve;
@@ -75,7 +58,6 @@ function isWithinZOPA(key, value, userReserve, aiReserve) {
         return value <= userReserve && value >= aiReserve;
     }
 }
-
 function checkDealCondition(offer, aiStyleKey, aiParams) {
     const zopaStatus = {};
     for (const key in offer) {
@@ -91,11 +73,9 @@ function checkDealCondition(offer, aiStyleKey, aiParams) {
         default: return false;
     }
 }
-
 function generateAiResponse(offer, gameState) {
     const { aiParams } = gameState;
     const painPoints = [];
-
     for (const key in offer) {
         const userValue = offer[key];
         const aiReserve = aiParams[key].reserve;
@@ -105,48 +85,36 @@ function generateAiResponse(offer, gameState) {
         } else {
             if (userValue < aiReserve) isPainful = true;
         }
-        
         if (isPainful) {
             painPoints.push({ key, userValue, aiExpect: aiParams[key].expect, aiReserve });
         }
     }
-
     if (painPoints.length === 0) {
         return `這個方案看起來有誠意，我們正在接近達成共識。但在總體利益上，我方還需要再評估一下。`;
     }
-
     const mainPainPoint = painPoints[Math.floor(Math.random() * painPoints.length)];
     const paramName = aiParams[mainPainPoint.key].name;
-
     if (gameState.lastPainPoint === mainPainPoint.key) {
         gameState.consecutivePainPointCount++;
     } else {
         gameState.lastPainPoint = mainPainPoint.key;
         gameState.consecutivePainPointCount = 1;
     }
-
     const responses = [
         `關於<strong>${paramName}</strong>，您提出的 ${mainPainPoint.userValue.toLocaleString()} 條件，與我方的預期差距有點大。`,
         `我理解您的立場，但在<strong>${paramName}</strong>這項上，我們恐怕無法接受 ${mainPainPoint.userValue.toLocaleString()} 這個數字。`,
-        `讓我們聚焦在<strong>${paramName}</strong>。您的方案和我們的目標 ${aiParams[mainPainPoint.key].expect.toLocaleString()} 還有一些距離。`,
-        `坦白說，<strong>${paramName}</strong>是我們比較關注的點，您提出的條件讓我們有些為難。`,
     ];
-    
     if (gameState.consecutivePainPointCount >= 2) {
         return `我們似乎在<strong>${paramName}</strong>上卡關了。這個條件 ${mainPainPoint.userValue.toLocaleString()} 對我們來說確實是個障礙，您能否在其他方面做些讓步來平衡一下？`;
     }
-
     return responses[Math.floor(Math.random() * responses.length)];
 }
-
-
 function generateReportData(gameState, finalOffer, isSuccess) {
     const { aiStyle, aiParams, stats } = gameState;
     const finalZopaStatus = {};
      for (const key in finalOffer) {
         finalZopaStatus[key] = isWithinZOPA(key, finalOffer[key], BASE_PARAMS.user[key].reserve, aiParams[key].reserve);
     }
-
     const report = {
         isSuccess,
         resultText: isSuccess ? '恭喜！您與業主達成了雙方都能接受的協議。' : '很遺憾，雙方未能達成共識，談判破裂。',
@@ -165,41 +133,38 @@ function generateReportData(gameState, finalOffer, isSuccess) {
             const inZopa = finalZopaStatus[key];
             const statusText = inZopa ? '在成交區間內' : '未落在成交區間';
             const colorClass = inZopa ? 'bg-green-500' : 'bg-red-500';
-            return `
-                <div>
-                    <span class="font-medium">${BASE_PARAMS.user[key].name}:</span>
-                    <span class="ml-2 text-sm font-semibold text-white px-2 py-1 rounded-full ${colorClass}">${statusText}</span>
-                </div>
-            `;
+            return `<div><span class="font-medium">${BASE_PARAMS.user[key].name}:</span><span class="ml-2 text-sm font-semibold text-white px-2 py-1 rounded-full ${colorClass}">${statusText}</span></div>`;
         }).join(''),
-        behaviorStatsHTML: `
-            <li>您共提出了 <strong>${stats.offers}</strong> 次方案。</li>
-            <li>您查看了 <strong>${stats.batnaViews}</strong> 次 BATNA。</li>
-        `,
+        behaviorStatsHTML: `<li>您共提出了 <strong>${stats.offers}</strong> 次方案。</li><li>您查看了 <strong>${stats.batnaViews}</strong> 次 BATNA。</li>`,
         satisfactionScoresHTML: isSuccess ? '<li>用戶滿意度: 計算中...</li><li>AI 滿意度: 計算中...</li>' : '<li>用戶滿意度: --/10</li><li>AI 滿意度: --/10</li>',
-        smartTipsHTML: isSuccess
-            ? `<p><strong>成交分析：</strong>您的方案滿足了業主 ${aiStyle.name} 風格的成交條件 (${aiStyle.desc})。</p>`
-            : `<p><strong>破裂分析：</strong>您的最終方案未能滿足業主 ${aiStyle.name} 風格的成交條件 (${aiStyle.desc})。</p>`
+        smartTipsHTML: isSuccess ? `<p><strong>成交分析：</strong>您的方案滿足了業主 ${aiStyle.name} 風格的成交條件 (${aiStyle.desc})。</p>` : `<p><strong>破裂分析：</strong>您的最終方案未能滿足業主 ${aiStyle.name} 風格的成交條件 (${aiStyle.desc})。</p>`
     };
     return report;
 }
 
 // --- Cloudflare Function Handler ---
-
 export const onRequest = async ({ request }) => {
     if (request.method !== 'POST') {
-        return new Response('Method Not Allowed', { status: 405 });
+        return new Response('Method Not Allowed', { status: 405, headers: { 'Content-Type': 'application/json' } });
+    }
+    
+    let body;
+    try {
+        body = await request.json();
+    } catch (e) {
+        return new Response(JSON.stringify({ error: "Invalid JSON in request body" }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
 
-    const body = await request.json();
-    const { action, token } = body;
-
+    const { action, token, offer } = body;
     let gameState;
+
     if (token) {
         gameState = decodeState(token);
-        if (!gameState) {
-             return new Response('Invalid token', { status: 400 });
-        }
+    }
+
+    // This is the new robust check to prevent crashes
+    if (action !== 'init' && (!gameState || !gameState.stats || !gameState.aiStyle || !gameState.aiParams)) {
+        return new Response(JSON.stringify({ error: "Invalid or missing game state token." }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
 
     switch (action) {
@@ -213,7 +178,6 @@ export const onRequest = async ({ request }) => {
             const randomStyleKey = allStyleKeys[Math.floor(Math.random() * allStyleKeys.length)];
             gameState.aiStyle = { key: randomStyleKey, ...AI_STYLES[randomStyleKey] };
             gameState.aiParams = generateDynamicParams(randomStyleKey);
-
             const leakableParams = ['duration', 'warranty', 'prepayment', 'obligation'];
             const shuffledLeaks = leakableParams.sort(() => 0.5 - Math.random());
             const leaksToReveal = shuffledLeaks.slice(0, Math.random() < 0.5 ? 1 : 2);
@@ -224,7 +188,6 @@ export const onRequest = async ({ request }) => {
                 const value = type === '期望' ? param.expect : param.reserve;
                 leakText += `${index > 0 ? '，同時' : ''}對 <strong>${param.name}</strong> 的${type}是 <strong>${value}${param.unit}</strong>`;
             });
-            
             const responsePayload = {
                 aiStyleName: gameState.aiStyle.name,
                 leakedInfoHTML: leakText,
@@ -232,14 +195,13 @@ export const onRequest = async ({ request }) => {
             };
             return new Response(JSON.stringify(responsePayload), { headers: { 'Content-Type': 'application/json' } });
         }
-
         case 'submit': {
-            const { offer } = body;
+            if (!offer) {
+                 return new Response(JSON.stringify({ error: "Offer data is missing in submit action." }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+            }
             gameState.stats.offers++;
-            
             const isDeal = checkDealCondition(offer, gameState.aiStyle.key, gameState.aiParams);
             let responsePayload;
-
             if (isDeal) {
                 responsePayload = {
                     isDeal: true,
@@ -255,15 +217,13 @@ export const onRequest = async ({ request }) => {
             }
             return new Response(JSON.stringify(responsePayload), { headers: { 'Content-Type': 'application/json' } });
         }
-        
         case 'end': {
-            const finalOffer = body.offer || Object.fromEntries(
+            const finalOffer = offer || Object.fromEntries(
                 Object.keys(BASE_PARAMS.user).map(key => [key, BASE_PARAMS.user[key].expect])
             );
             const reportData = generateReportData(gameState, finalOffer, false);
             return new Response(JSON.stringify(reportData), { headers: { 'Content-Type': 'application/json' } });
         }
-        
         case 'viewBatna': {
             gameState.stats.batnaViews++;
             const responsePayload = {
@@ -271,8 +231,7 @@ export const onRequest = async ({ request }) => {
             };
             return new Response(JSON.stringify(responsePayload), { headers: { 'Content-Type': 'application/json' } });
         }
-
         default:
-            return new Response('Invalid action', { status: 400 });
+            return new Response(JSON.stringify({ error: 'Invalid action' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
-}
+};
