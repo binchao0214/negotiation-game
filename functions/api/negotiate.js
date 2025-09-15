@@ -72,7 +72,7 @@ function checkDealCondition(offer, aiStyleKey, aiParams) {
 }
 
 function generateAiResponse(offer, gameState) {
-    const { aiParams } = gameState;
+    const { aiParams } = gameState.currentRound;
     const painPoints = [];
     // A pain point for the AI is when the user's offer is WORSE for the AI than its reserve value.
     for (const key in offer) {
@@ -101,8 +101,8 @@ function generateAiResponse(offer, gameState) {
     const param = aiParams[mainPainPoint.key];
     const { name, en_name } = param;
 
-    if (gameState.lastPainPoint === mainPainPoint.key) { gameState.consecutivePainPointCount++; } 
-    else { gameState.lastPainPoint = mainPainPoint.key; gameState.consecutivePainPointCount = 1; }
+    if (gameState.currentRound.lastPainPoint === mainPainPoint.key) { gameState.currentRound.consecutivePainPointCount++; } 
+    else { gameState.currentRound.lastPainPoint = mainPainPoint.key; gameState.currentRound.consecutivePainPointCount = 1; }
     
     const responses = {
         cost: [ 
@@ -119,7 +119,7 @@ function generateAiResponse(offer, gameState) {
         ]
     };
 
-    if (gameState.consecutivePainPointCount >= 2) {
+    if (gameState.currentRound.consecutivePainPointCount >= 2) {
         return `我們似乎在<strong>${name}</strong>上卡關了。這個條件對我們來說確實是個障礙，您能否在其他方面做些讓步來平衡一下？<p class="en-text">It seems we're stuck on the <strong>${en_name}</strong>. This term is a real obstacle for us. Could you perhaps make a concession elsewhere to balance it out?</p>`;
     }
 
@@ -127,16 +127,20 @@ function generateAiResponse(offer, gameState) {
     return responseSet[Math.floor(Math.random() * responseSet.length)];
 }
 
-function calculateSatisfactionScores(finalOffer, aiParams) {
-    const RANGES = { cost: { min: 8500000, max: 11000000 }, duration: { min: 200, max: 350 }, warranty: { min: 1, max: 5 }, prepayment: { min: 10, max: 30 }, obligation: { min: 1, max: 5 } };
+function calculateSatisfactionScores(finalOffer, aiParams, isPractice) {
+    const RANGES = isPractice ? { cost: { min: 1100000, max: 1500000 }, duration: { min: 40, max: 60 }, warranty: { min: 1, max: 3 }, prepayment: { min: 10, max: 30 }, obligation: { min: 1, max: 3 } } : { cost: { min: 8500000, max: 11000000 }, duration: { min: 200, max: 350 }, warranty: { min: 1, max: 5 }, prepayment: { min: 10, max: 30 }, obligation: { min: 1, max: 5 } };
+    const userParams = isPractice ? PRACTICE_PARAMS.user : BASE_PARAMS.user;
+    const aiBaseParams = isPractice ? PRACTICE_PARAMS.ai : BASE_PARAMS.ai;
+    const batna = isPractice ? PRACTICE_USER_BATNA : USER_BATNA;
+
     const normalize = (key, value) => (RANGES[key].max - RANGES[key].min === 0) ? 0 : (value - RANGES[key].min) / (RANGES[key].max - RANGES[key].min);
     
     let userSqDiff = 0, aiSqDiff = 0;
     
     for (const key in finalOffer) {
         const normFinal = normalize(key, finalOffer[key]);
-        const normUserExpect = normalize(key, BASE_PARAMS.user[key].expect);
-        const normAiExpect = normalize(key, BASE_PARAMS.ai[key].expect);
+        const normUserExpect = normalize(key, userParams[key].expect);
+        const normAiExpect = normalize(key, aiBaseParams[key].expect);
         userSqDiff += Math.pow(normFinal - normUserExpect, 2);
         aiSqDiff += Math.pow(normFinal - normAiExpect, 2);
     }
@@ -148,11 +152,11 @@ function calculateSatisfactionScores(finalOffer, aiParams) {
     // --- Penalty Logic for Over-concession ---
     let penaltyFactor = 1.0;
     const penaltyReasons = [];
-    if (finalOffer.cost < aiParams.cost.expect && finalOffer.cost < USER_BATNA.cost) { penaltyFactor -= 0.15; penaltyReasons.push('總造價遠低於市場行情 (Cost was well below market rate)'); }
-    if (finalOffer.duration < aiParams.duration.expect && finalOffer.duration < USER_BATNA.duration) { penaltyFactor -= 0.15; penaltyReasons.push('工期過於倉促 (Duration was unnecessarily short)'); }
-    if (finalOffer.prepayment < aiParams.prepayment.expect && finalOffer.prepayment < USER_BATNA.prepayment) { penaltyFactor -= 0.15; penaltyReasons.push('預付款要求過低 (Prepayment was too low)'); }
-    if (finalOffer.warranty > aiParams.warranty.expect && finalOffer.warranty > USER_BATNA.warranty) { penaltyFactor -= 0.15; penaltyReasons.push('保修期承諾過長 (Warranty period was excessively long)'); }
-    if (finalOffer.obligation > aiParams.obligation.expect && finalOffer.obligation > USER_BATNA.obligation) { penaltyFactor -= 0.15; penaltyReasons.push('承擔了過多附加義務 (Took on too many obligations)'); }
+    if (finalOffer.cost < aiParams.cost.expect && finalOffer.cost < batna.cost) { penaltyFactor -= 0.15; penaltyReasons.push('總造價遠低於市場行情 (Cost was well below market rate)'); }
+    if (finalOffer.duration < aiParams.duration.expect && finalOffer.duration < batna.duration) { penaltyFactor -= 0.15; penaltyReasons.push('工期過於倉促 (Duration was unnecessarily short)'); }
+    if (finalOffer.prepayment < aiParams.prepayment.expect && finalOffer.prepayment < batna.prepayment) { penaltyFactor -= 0.15; penaltyReasons.push('預付款要求過低 (Prepayment was too low)'); }
+    if (finalOffer.warranty > aiParams.warranty.expect && finalOffer.warranty > batna.warranty) { penaltyFactor -= 0.15; penaltyReasons.push('保修期承諾過長 (Warranty period was excessively long)'); }
+    if (finalOffer.obligation > aiParams.obligation.expect && finalOffer.obligation > batna.obligation) { penaltyFactor -= 0.15; penaltyReasons.push('承擔了過多附加義務 (Took on too many obligations)'); }
     
     userSatisfaction *= penaltyFactor;
 
@@ -164,22 +168,29 @@ function calculateSatisfactionScores(finalOffer, aiParams) {
 }
 
 function generateReportData(gameState, finalOffer, isSuccess) {
-    const { aiStyle, aiParams, stats, gameHistory } = gameState;
+    const { currentRound, gameHistory } = gameState;
+    const { aiStyle, aiParams, stats, isPractice } = currentRound;
+    const userParams = isPractice ? PRACTICE_PARAMS.user : BASE_PARAMS.user;
     const finalZopaStatus = {};
-    for (const key in finalOffer) { finalZopaStatus[key] = isWithinZOPA(key, finalOffer[key], BASE_PARAMS.user[key].reserve, aiParams[key].reserve); }
+    for (const key in finalOffer) { finalZopaStatus[key] = isWithinZOPA(key, finalOffer[key], userParams[key].reserve, aiParams[key].reserve); }
     
-    const satisfaction = isSuccess ? calculateSatisfactionScores(finalOffer, aiParams) : { user: '--', ai: '--', penaltyReasons: [] };
+    const satisfaction = isSuccess ? calculateSatisfactionScores(finalOffer, aiParams, isPractice) : { user: '--', ai: '--', penaltyReasons: [] };
 
-    const currentRoundHistory = {
-        styleName: aiStyle.name, en_styleName: aiStyle.en_name,
-        isSuccess, satisfaction,
-        offersSubmitted: stats.offers, batnaViews: stats.batnaViews,
-        irrationalMoves: stats.irrationalMoves,
-        finalOffer: isSuccess ? finalOffer : null
-    };
-    const updatedGameHistory = [...gameHistory, currentRoundHistory];
-    const isGameOver = updatedGameHistory.length >= Object.keys(AI_STYLES).length;
+    let updatedGameHistory = [...gameHistory];
+    let isGameOver = false;
 
+    if (!isPractice) {
+        const currentRoundHistory = {
+            styleName: aiStyle.name, en_styleName: aiStyle.en_name,
+            isSuccess, satisfaction,
+            offersSubmitted: stats.offers, batnaViews: stats.batnaViews,
+            irrationalMoves: stats.irrationalMoves,
+            finalOffer: isSuccess ? finalOffer : null
+        };
+        updatedGameHistory = [...gameHistory, currentRoundHistory];
+        isGameOver = updatedGameHistory.length >= Object.keys(AI_STYLES).length;
+    }
+    
     let finalScore = null;
     if (isGameOver) {
         finalScore = calculateFinalScore(updatedGameHistory);
@@ -197,11 +208,11 @@ function generateReportData(gameState, finalOffer, isSuccess) {
     }
 
     return {
-        isSuccess, isGameOver, gameHistory: updatedGameHistory, finalScore,
+        isSuccess, isGameOver, isPracticeRoundOver: isPractice, gameHistory: updatedGameHistory, finalScore,
         resultText: isSuccess ? '恭喜！您與業主達成了雙方都能接受的協議。<p class="en-text">Congratulations! You have reached a mutually acceptable agreement with the client.</p>' : '很遺憾，雙方未能達成共識，談判破裂。<p class="en-text">Unfortunately, a consensus was not reached, and the negotiation has failed.</p>',
         aiStyleName: `${aiStyle.name}<p class="en-text">${aiStyle.en_name}</p>`,
-        reportTableHTML: Object.keys(BASE_PARAMS.user).map(key => {
-            const param = BASE_PARAMS.user[key];
+        reportTableHTML: Object.keys(userParams).map(key => {
+            const param = userParams[key];
             const finalValue = finalOffer[key];
             return `<tr class="border-b">
                 <td class="p-3 font-medium">${param.name}<p class="en-text font-normal">${param.en_name}</p></td>
@@ -210,9 +221,9 @@ function generateReportData(gameState, finalOffer, isSuccess) {
                 <td>${aiParams[key].reserve.toLocaleString()}${aiParams[key].unit}</td><td>${aiParams[key].expect.toLocaleString()}${aiParams[key].unit}</td>
             </tr>`;
         }).join(''),
-        dealZoneAnalysisHTML: Object.keys(BASE_PARAMS.user).map(key => {
+        dealZoneAnalysisHTML: Object.keys(userParams).map(key => {
             const inZopa = finalZopaStatus[key];
-            return `<div><span class="font-medium">${BASE_PARAMS.user[key].name} (${BASE_PARAMS.user[key].en_name}):</span><span class="ml-2 text-sm font-semibold text-white px-2 py-1 rounded-full ${inZopa ? 'bg-green-500' : 'bg-red-500'}">${inZopa ? '在成交區間內 (In ZOPA)' : '未落在成交區間 (Outside ZOPA)'}</span></div>`;
+            return `<div><span class="font-medium">${userParams[key].name} (${userParams[key].en_name}):</span><span class="ml-2 text-sm font-semibold text-white px-2 py-1 rounded-full ${inZopa ? 'bg-green-500' : 'bg-red-500'}">${inZopa ? '在成交區間內 (In ZOPA)' : '未落在成交區間 (Outside ZOPA)'}</span></div>`;
         }).join(''),
         behaviorStatsHTML: `<li>對話輪次 (Rounds): <strong>${stats.offers}</strong> 次</li><li>查看 BATNA (BATNA Views): <strong>${stats.batnaViews}</strong> 次</li>`,
         satisfactionScoresHTML: `<div class="flex justify-between"><span>您的滿意度 (Your Score):</span><span class="font-bold text-lg">${satisfaction.user} / 10</span></div><div class="flex justify-between"><span>業主滿意度 (Client's Score):</span><span class="font-bold text-lg">${satisfaction.ai} / 10</span></div>`,
@@ -235,34 +246,74 @@ function calculateFinalScore(gameHistory) {
 
 const handleAction = {
     'init': (payload) => {
-        let decodedToken = payload.token ? decodeState(payload.token) : null;
-        let completedStyles = (decodedToken && decodedToken.completedStyles) ? decodedToken.completedStyles : [];
-        let gameHistory = (decodedToken && decodedToken.gameHistory) ? decodedToken.gameHistory : [];
+        let state = payload.token ? decodeState(payload.token) : { gameHistory: [], completedStyles: [] };
         
-        const allStyleKeys = Object.keys(AI_STYLES);
-        if (completedStyles.length >= allStyleKeys.length) {
-            const finalScore = calculateFinalScore(gameHistory);
-            return { isGameOver: true, gameHistory, finalScore };
+        if (state.completedStyles.length >= Object.keys(AI_STYLES).length) {
+            const finalScore = calculateFinalScore(state.gameHistory);
+            return { isGameOver: true, gameHistory: state.gameHistory, finalScore };
         }
         
-        let availableStyles = allStyleKeys.filter(k => !completedStyles.includes(k));
-        const randomStyleKey = availableStyles[Math.floor(Math.random() * availableStyles.length)];
-        
-        let gameState = {
-            stats: { offers: 0, batnaViews: 0, irrationalMoves: 0 },
-            lastPainPoint: null, consecutivePainPointCount: 0,
-            completedStyles: completedStyles, gameHistory: gameHistory
-        };
+        const isPractice = !state.gameHistory || state.gameHistory.length === 0 || (payload.token === null && state.completedStyles.length === 0);
 
-        gameState.aiStyle = { key: randomStyleKey, ...AI_STYLES[randomStyleKey] };
-        gameState.aiParams = generateDynamicParams(randomStyleKey);
+        let currentRound;
+        let scene;
+        let sliderConfig;
+
+        if (isPractice) {
+            currentRound = {
+                isPractice: true,
+                aiStyle: { key: 'fair', ...AI_STYLES['fair'] },
+                aiParams: generateDynamicParams('fair', PRACTICE_PARAMS.ai),
+                stats: { offers: 0, batnaViews: 0, irrationalMoves: 0 },
+                lastPainPoint: null, consecutivePainPointCount: 0,
+            };
+            scene = {
+                title: '練習輪：辦公室裝修', en_title: 'Practice Round: Office Renovation',
+                desc: '您將為一間新創公司的辦公室進行裝修工程。', en_desc: 'You will be renovating the office for a startup company.',
+                userParams: PRACTICE_PARAMS.user,
+                userBatna: '接受另一個報價 1,300,000 元，工期 50 天的案子。<p class="en-text">Accept another project with a price of 1,300,000 and a 50-day duration.</p>'
+            };
+            sliderConfig = {
+                cost: { min: 1000000, max: 1600000, step: 10000 },
+                duration: { min: 30, max: 70, step: 1 },
+                warranty: { min: 1, max: 3, step: 1 },
+                prepayment: { min: 10, max: 40, step: 1 },
+                obligation: { min: 1, max: 3, step: 1 }
+            };
+             state = { gameHistory: [], completedStyles: [] }; // Reset for official rounds
+        } else {
+            const availableStyles = Object.keys(AI_STYLES).filter(k => !state.completedStyles.includes(k));
+            const randomStyleKey = availableStyles[Math.floor(Math.random() * availableStyles.length)];
+            currentRound = {
+                isPractice: false,
+                aiStyle: { key: randomStyleKey, ...AI_STYLES[randomStyleKey] },
+                aiParams: generateDynamicParams(randomStyleKey, BASE_PARAMS.ai),
+                stats: { offers: 0, batnaViews: 0, irrationalMoves: 0 },
+                lastPainPoint: null, consecutivePainPointCount: 0,
+            };
+            scene = {
+                title: '正式挑戰：商業綜合體總承包', en_title: 'Official Challenge: General Contractor for a Commercial Complex',
+                desc: '您將為一個新的商業綜合體建設項目進行總承包談判。', en_desc: 'You will negotiate the general contract for a new commercial complex project.',
+                userParams: BASE_PARAMS.user,
+                userBatna: '接受另一個住宅項目合約。<p class="en-text">Accept another residential project contract.</p>'
+            };
+            sliderConfig = {
+                cost: { min: 8500000, max: 11000000, step: 50000 },
+                duration: { min: 200, max: 350, step: 5 },
+                warranty: { min: 1, max: 5, step: 1 },
+                prepayment: { min: 10, max: 30, step: 1 },
+                obligation: { min: 1, max: 5, step: 1 }
+            };
+        }
+
+        state.currentRound = currentRound;
         
         let leakText = '情報顯示 (Intel shows): 業主方 (the Client)...';
         const leakableParams = ['duration', 'warranty', 'prepayment', 'obligation'];
         const shuffledLeaks = leakableParams.sort(() => 0.5 - Math.random());
         const leaksToReveal = shuffledLeaks.slice(0, 1 + Math.floor(Math.random() * 2));
         leaksToReveal.forEach((paramKey, index) => {
-            const param = gameState.aiParams[paramKey];
+            const param = currentRound.aiParams[paramKey];
             const type = Math.random() < 0.5 ? '期望' : '底線';
             const en_type = type === '期望' ? 'expectation' : 'reserve point';
             const value = type === '期望' ? param.expect : param.reserve;
@@ -270,26 +321,25 @@ const handleAction = {
         });
         
         return {
-            isGameOver: false,
-            aiStyleName: gameState.aiStyle.name,
-            aiStyleEnName: gameState.aiStyle.en_name,
+            isGameOver: false, isPractice, roundNum: state.gameHistory.length + 1,
+            scene, sliderConfig,
+            aiStyleName: currentRound.aiStyle.name, aiStyleEnName: currentRound.aiStyle.en_name,
             leakedInfoHTML: leakText,
-            initialOffer: Object.fromEntries(Object.keys(BASE_PARAMS.user).map(key => [key, BASE_PARAMS.user[key].expect])),
-            token: encodeState(gameState)
+            initialOffer: Object.fromEntries(Object.keys(scene.userParams).map(key => [key, scene.userParams[key].expect])),
+            token: encodeState(state)
         };
     },
     'submit': (gameState, payload) => {
         const { offer } = payload;
         if (!offer) throw new Error("缺少 offer 数据 (Missing offer data)");
-        gameState.stats.offers++;
-        const isDeal = checkDealCondition(offer, gameState.aiStyle.key, gameState.aiParams);
+        gameState.currentRound.stats.offers++;
+        const isDeal = checkDealCondition(offer, gameState.currentRound.aiStyle.key, gameState.currentRound.aiParams, gameState.currentRound.isPractice);
         
         if (isDeal) {
             const reportData = generateReportData(gameState, offer, true);
-            gameState.completedStyles.push(gameState.aiStyle.key);
-            gameState.gameHistory = reportData.gameHistory;
-            if (reportData.isGameOver) {
-                reportData.finalScore = calculateFinalScore(reportData.gameHistory);
+            if (!gameState.currentRound.isPractice) {
+                gameState.completedStyles.push(gameState.currentRound.aiStyle.key);
+                gameState.gameHistory = reportData.gameHistory;
             }
             return { isDeal: true, reportData, token: encodeState(gameState) };
         } else {
@@ -297,21 +347,21 @@ const handleAction = {
         }
     },
     'end': (gameState, payload) => {
-        const finalOffer = payload.offer || Object.fromEntries(Object.keys(BASE_PARAMS.user).map(key => [key, BASE_PARAMS.user[key].expect]));
+        const userParams = gameState.currentRound.isPractice ? PRACTICE_PARAMS.user : BASE_PARAMS.user;
+        const finalOffer = payload.offer || Object.fromEntries(Object.keys(userParams).map(key => [key, userParams[key].expect]));
         const reportData = generateReportData(gameState, finalOffer, false);
-        gameState.completedStyles.push(gameState.aiStyle.key);
-        gameState.gameHistory = reportData.gameHistory;
-        if (reportData.isGameOver) {
-            reportData.finalScore = calculateFinalScore(reportData.gameHistory);
+        if (!gameState.currentRound.isPractice) {
+            gameState.completedStyles.push(gameState.currentRound.aiStyle.key);
+            gameState.gameHistory = reportData.gameHistory;
         }
         return { reportData, token: encodeState(gameState) };
     },
     'viewBatna': (gameState) => {
-        gameState.stats.batnaViews++;
+        gameState.currentRound.stats.batnaViews++;
         return { token: encodeState(gameState) };
     },
     'irrationalMove': (gameState) => {
-        gameState.stats.irrationalMoves++;
+        gameState.currentRound.stats.irrationalMoves++;
         return { token: encodeState(gameState) };
     }
 };
