@@ -94,26 +94,20 @@ function generateDynamicParams(styleKey, baseAiParams) {
     return newAiParams;
 }
 
-function isWithinZOPA(key, value, userReserve, aiReserve) {
-    // For cost, higher is better for user. ZOPA is [userReserve, aiReserve]
-    // For duration, higher is better for user in 'professional' but worse in 'student'/'general'.
-    // The logic should be based on which direction is 'better' for the user, which is from reserve to expect.
-    const userExpect = (SCENARIOS[gameState.identity] || SCENARIOS.practice).params.user[key].expect;
-    
-    if (userExpect > userReserve) { // Higher values are better for user
-        return value >= userReserve && value <= aiReserve;
+function isWithinZOPA(key, value, userParam, aiReserve) {
+    if (userParam.expect > userParam.reserve) { // Higher values are better for user
+        return value >= userParam.reserve && value <= aiReserve;
     } else { // Lower values are better for user
-        return value <= userReserve && value >= aiReserve;
+        return value <= userParam.reserve && value >= aiReserve;
     }
 }
 
-function checkDealCondition(offer, aiStyleKey, aiParams, userParams) {
+function checkDealCondition(offer, aiStyleKey, aiParams, userParams, identity) {
     const zopaStatus = {};
-    for (const key in offer) { zopaStatus[key] = isWithinZOPA(key, offer[key], userParams[key].reserve, aiParams[key].reserve); }
+    for (const key in offer) { zopaStatus[key] = isWithinZOPA(key, offer[key], userParams[key], aiParams[key].reserve); }
     const zopaCount = Object.values(zopaStatus).filter(Boolean).length;
     
-    // For student scenario, cost is salary, duration is length. The logic is inverted compared to professional.
-    const keyItems = gameState.identity === 'student' ? ['cost', 'duration'] : ['cost', 'duration'];
+    let keyItems = ['cost', 'duration']; // Default for professional, student, general
     
     switch (aiStyleKey) {
         case 'tough': return zopaCount >= 5;
@@ -126,16 +120,16 @@ function checkDealCondition(offer, aiStyleKey, aiParams, userParams) {
 }
 
 function generateAiResponse(offer, gameState) {
-    const { aiParams } = gameState.currentRound;
-    const userParams = SCENARIOS[gameState.identity || 'practice'].params.user;
+    const { aiParams, isPractice } = gameState.currentRound;
+    const userParams = isPractice ? SCENARIOS.practice.params.user : SCENARIOS[gameState.identity].params.user;
     const painPoints = [];
     
     for (const key in offer) {
         const userValue = offer[key];
         const aiReserve = aiParams[key].reserve;
+        const aiExpect = aiParams[key].expect;
         let isPainful = false;
 
-        const aiExpect = aiParams[key].expect;
         if (aiReserve > aiExpect) { // Higher is worse for AI
             if (userValue > aiReserve) isPainful = true;
         } else { // Lower is worse for AI
@@ -189,18 +183,19 @@ function calculateSatisfactionScores(finalOffer, scene) {
     let penaltyFactor = 1.0;
     const penaltyReasons = [];
     
-    // Penalty logic needs to check if user's offer is BETTER for the AI than AI's expectation AND user's BATNA
     for(const key in finalOffer) {
         const userValue = finalOffer[key];
         const aiExpect = aiBaseParams[key].expect;
         const batnaValue = batna[key];
         let overConceded = false;
         
-        if (aiBaseParams[key].reserve > aiExpect) { // Higher is worse for AI
+        // Check if user's offer is better for AI than AI's expectation, AND worse for user than user's BATNA
+        if (aiBaseParams[key].reserve > aiExpect) { // Higher is worse for AI -> Lower is better
             if(userValue < aiExpect && userValue < batnaValue) overConceded = true;
-        } else { // Lower is worse for AI
+        } else { // Lower is worse for AI -> Higher is better
             if(userValue > aiExpect && userValue > batnaValue) overConceded = true;
         }
+
         if(overConceded){
              penaltyFactor -= 0.15;
              penaltyReasons.push(`${userParams[key].name} (${userParams[key].en_name})`);
@@ -223,7 +218,7 @@ function generateReportData(gameState, finalOffer, isSuccess) {
     const userParams = scene.params.user;
     
     const finalZopaStatus = {};
-    for (const key in finalOffer) { finalZopaStatus[key] = isWithinZOPA(key, finalOffer[key], userParams[key].reserve, aiParams[key].reserve); }
+    for (const key in finalOffer) { finalZopaStatus[key] = isWithinZOPA(key, finalOffer[key], userParams[key], aiParams[key].reserve); }
     
     const satisfaction = isSuccess ? calculateSatisfactionScores(finalOffer, scene) : { user: '--', ai: '--', penaltyReasons: [] };
 
@@ -364,7 +359,7 @@ const handleAction = {
         if (!offer) throw new Error("缺少 offer 数据 (Missing offer data)");
         gameState.currentRound.stats.offers++;
         const userParams = gameState.currentRound.isPractice ? SCENARIOS.practice.params.user : SCENARIOS[gameState.identity].params.user;
-        const isDeal = checkDealCondition(offer, gameState.currentRound.aiStyle.key, gameState.currentRound.aiParams, userParams);
+        const isDeal = checkDealCondition(offer, gameState.currentRound.aiStyle.key, gameState.currentRound.aiParams, userParams, gameState.identity);
         
         if (isDeal) {
             const reportData = generateReportData(gameState, offer, true);
@@ -403,17 +398,17 @@ const handleAction = {
 
 export const onRequest = async ({ request }) => {
     try {
-        if (request.method !== 'POST') return new Response(JSON.stringify({ error: 'Method Not Allowed' }), { status: 405 });
+        if (request.method !== 'POST') return new Response(JSON.stringify({ error: 'Method Not Allowed' }), { status: 405, headers: { 'Content-Type': 'application/json' } });
         const payload = await request.json();
         const { action, token } = payload;
-        if (!action || !handleAction[action]) return new Response(JSON.stringify({ error: 'Invalid action' }), { status: 400 });
+        if (!action || !handleAction[action]) return new Response(JSON.stringify({ error: 'Invalid action' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
         let gameState = action === 'init' ? null : decodeState(token);
-        if (action !== 'init' && !gameState) return new Response(JSON.stringify({ error: 'Invalid game state token' }), { status: 400 });
+        if (action !== 'init' && !gameState) return new Response(JSON.stringify({ error: 'Invalid game state token' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
         const result = handleAction[action](action === 'init' ? payload : gameState, payload);
         return new Response(JSON.stringify(result), { status: 200, headers: { 'Content-Type': 'application/json' } });
     } catch (error) {
         console.error('An unexpected error occurred:', error);
-        return new Response(JSON.stringify({ error: 'Internal Server Error', details: error.message }), { status: 500 });
+        return new Response(JSON.stringify({ error: 'Internal Server Error', details: error.message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
     }
 };
 
