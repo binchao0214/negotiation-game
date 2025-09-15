@@ -16,7 +16,7 @@ const GAME_THEMES = {
         BASE_PARAMS: {
             user: {
                 salary:     { expect: 8000, reserve: 5000, name: '實習月薪', en_name: 'Monthly Salary', unit: ' 元', format: 'currency' },
-                duration:   { expect: 8,    reserve: 12,   name: '實習時長', en_name: 'Internship Duration', unit: ' 週 (Weeks)' },
+                duration:   { expect: 8,    reserve: 12,   name: '實習時長', en_name: 'Internship Duration', unit: ' 週', unit_en: ' Weeks' },
                 stipend:    { expect: 1500, reserve: 500,  name: '住房補貼', en_name: 'Housing Stipend', unit: ' 元/月', format: 'currency' },
                 autonomy:   { expect: 4,    reserve: 2,    name: '專案主導權', en_name: 'Project Autonomy', unit: '', format: 'level', levels: { 1: { name: '輔助', en_name: 'Support'}, 2: { name: '參與', en_name: 'Participant'}, 3: { name: '負責模塊', en_name: 'Module Owner'}, 4: { name: '擁有決策權', en_name: 'Decision-maker'}, 5: { name: '領導子專案', en_name: 'Sub-project Lead'} } },
                 mentorship: { expect: 4,    reserve: 2,    name: '導師等級', en_name: 'Mentorship Level', unit: '', format: 'level', levels: { 1: { name: '無', en_name: 'None'}, 2: { name: '組內提問', en_name: 'Team Q&A'}, 3: { name: '指定導師', en_name: 'Assigned Mentor'}, 4: { name: '總監級指導', en_name: 'Director-level'}, 5: { name: '一對一指導', en_name: '1-on-1 Mentoring'} } }
@@ -54,17 +54,19 @@ const GAME_THEMES = {
             reportTableHead: '<tr><th class="p-3">參數<p class="en-text font-normal">Parameter</p></th><th class="p-3 text-sky-600">您的最終方案<p class="en-text font-normal">Your Final Offer</p></th><th class="p-3 text-green-600">您的期望<p class="en-text font-normal">Your Expectation</p></th><th class="p-3 text-red-600">您的底線<p class="en-text font-normal">Your Reserve</p></th><th class="p-3 text-red-600">對方底線<p class="en-text font-normal">Opponent\'s Reserve</p></th><th class="p-3 text-green-600">對方期望<p class="en-text font-normal">Opponent\'s Expectation</p></th></tr>',
             finalSummaryTableHead: '<tr><th class="p-3">HR 談判風格<p class="en-text font-normal">Style</p></th><th class="p-3">結果<p class="en-text font-normal">Result</p></th><th class="p-3">Offer 內容<p class="en-text font-normal">Offer Terms</p></th><th class="p-3">對話輪次<p class="en-text font-normal">Rounds</p></th><th class="p-3">BATNA 查看<p class="en-text font-normal">BATNA Views</p></th><th class="p-3">過度讓步<p class="en-text font-normal">Over-concessions</p></th><th class="p-3">非理性思考<p class="en-text font-normal">Irrational Moves</p></th><th class="p-3">您的滿意度<p class="en-text font-normal">Your Score</p></th><th class="p-3">HR 滿意度<p class="en-text font-normal">HR\'s Score</p></th></tr>',
             DISCUSSION_QUESTIONS: `
-                <h4>關於「小組報告」：</h4>
+                <h4><span class="text-sky-600">共性思維</span>：概念複習</h4>
                 <ol class="list-decimal list-inside space-y-2">
-                    <li>在與「搭便車」組員談判時，你認為最重要的籌碼是什麼？是「威脅退出」還是「利益交換」？</li>
-                    <li>如果對方在所有項目上都只願意承擔最低責任，你會如何應對以避免談判破裂，同時又不會讓自己吃虧？</li>
-                    <li>這次練習中，你是否使用了「價值交換」(Trade-on) 策略？例如，用「承擔更多領導責任」來換取對方「多分擔一些簡報製作」？效果如何？</li>
+                    <li>無論在哪种情境，「最佳替代方案」(BATNA) 都至关重要。请问你的 BATNA 在哪一轮谈判中对你的帮助最大？它是如何让你更有底气地坚持立场或放弃谈判的？</li>
+                    <li>「可能成交区间」(ZOPA) 是双方底线的交集。有没有哪一轮你感觉 ZOPA 特别狭窄？你是如何通过「价值交换」(Trade-on)，比如用自己不太在意的项目去换取核心利益，从而成功创造出 ZOPA 的？</li>
                 </ol>
-                <h4 class="mt-4">關於「實習 Offer」：</h4>
+                <h4 class="mt-4"><span class="text-sky-600">个体化差异</span>：策略复盘</h4>
                 <ol class="list-decimal list-inside space-y-2">
-                    <li>薪資不是唯一重要的項目。在這次模擬中，你如何平衡「薪資」、「住房補貼」和「專案主導權」這類不同類型的利益？</li>
-                    <li>面對不同風格的 HR，你的談判策略有何不同？例如，對「強悍型」和「隨和型」的 HR，你的開價和讓步方式有什麼區別？</li>
-                    <li>了解自己的 BATNA (備選 Offer) 對你的談判有多大幫助？它是否讓你更有底氣地拒絕對方不合理的要求？</li>
+                    <li>回顾你得分最高或最低的一轮谈判，你认为成功的关键或失败的原因是什么？你的开价策略（先高后低，还是接近底线）是如何影响整个谈判过程的？</li>
+                    <li>面对五种不同风格的对手（强悍型、交换型、公平型、关键变量型、随和型），你的应对策略有何不同？哪一种风格的对手让你觉得最难处理，为什么？</li>
+                </ol>
+                <h4 class="mt-4"><span class="text-sky-600">启发与应用</span>：延伸思考</h4>
+                <ol class="list-decimal list-inside space-y-2">
+                    <li>除了求职和做项目，你还能想到哪些生活或学习场景可以应用 BATNA、ZOPA 和价值交换的思维？（例如：与室友协商生活公约、购物砍价、规划旅行等）请举一个具体例子。</li>
                 </ol>`
         }
     },
@@ -120,17 +122,19 @@ const GAME_THEMES = {
             reportTableHead: '<tr><th class="p-3">參數<p class="en-text font-normal">Parameter</p></th><th class="p-3 text-sky-600">您的最終方案<p class="en-text font-normal">Your Final Offer</p></th><th class="p-3 text-green-600">您的期望<p class="en-text font-normal">Your Expectation</p></th><th class="p-3 text-red-600">您的底線<p class="en-text font-normal">Your Reserve</p></th><th class="p-3 text-red-600">業主底線<p class="en-text font-normal">Client\'s Reserve</p></th><th class="p-3 text-green-600">業主期望<p class="en-text font-normal">Client\'s Expectation</p></th></tr>',
             finalSummaryTableHead: '<tr><th class="p-3">談判風格<p class="en-text font-normal">Style</p></th><th class="p-3">結果<p class="en-text font-normal">Result</p></th><th class="p-3">成交方案<p class="en-text font-normal">Deal Terms</p></th><th class="p-3">對話輪次<p class="en-text font-normal">Rounds</p></th><th class="p-3">BATNA 查看<p class="en-text font-normal">BATNA Views</p></th><th class="p-3">過度讓步<p class="en-text font-normal">Over-concessions</p></th><th class="p-3">非理性思考<p class="en-text font-normal">Irrational Moves</p></th><th class="p-3">您的滿意度<p class="en-text font-normal">Your Score</p></th><th class="p-3">業主滿意度<p class="en-text font-normal">Client\'s Score</p></th></tr>',
             DISCUSSION_QUESTIONS: `
-                <h4>關於「工程投標」：</h4>
+                <h4><span class="text-emerald-600">共性思維</span>：概念複習</h4>
                 <ol class="list-decimal list-inside space-y-2">
-                    <li>在商業談判中，「總造價」和「工期」通常是核心議題。你是如何利用「保修期」、「預付款」等次要變量來為核心議題創造談判空間的？</li>
-                    <li>面對「關鍵變量型」這種寸步不讓的對手，除了在他指定的關鍵變量上讓步，還有哪些策略可以嘗試？（例如：重新定義問題、引入新變量等）</li>
-                    <li>BATNA（最佳替代方案）如何影響你的報價策略？如果你的 BATNA 很差（例如沒有其他項目可選），你的談判策略會如何調整？</li>
+                    <li>無論在哪种情境，「最佳替代方案」(BATNA) 都至关重要。请问你的 BATNA 在哪一轮谈判中对你的帮助最大？它是如何让你更有底气地坚持立场或放弃谈判的？</li>
+                    <li>「可能成交区间」(ZOPA) 是双方底线的交集。有没有哪一轮你感觉 ZOPA 特别狭窄？你是如何通过「价值交换」(Trade-on)，比如用自己不太在意的项目去换取核心利益，从而成功创造出 ZOPA 的？</li>
                 </ol>
-                <h4 class="mt-4">關於「談判風格」：</h4>
+                <h4 class="mt-4"><span class="text-emerald-600">个体化差异</span>：策略复盘</h4>
                 <ol class="list-decimal list-inside space-y-2">
-                    <li>在五輪挑戰中，你覺得哪種風格的對手最難應付？為什麼？你對付他/她的策略是什麼？</li>
-                    <li>「交換型」(Horse-Trader) 對手看重多數共識。在面對他們時，是否意味著你可以輕易放棄一兩個你不太在乎的項目，以換取四個對你有利的條件？</li>
-                    <li>反思你自己的行為，你認為你更偏向哪種談判風格？這在遊戲中是優勢還是劣勢？</li>
+                    <li>回顾你得分最高或最低的一轮谈判，你认为成功的关键或失败的原因是什么？你的开价策略（先高后低，还是接近底线）是如何影响整个谈判过程的？</li>
+                    <li>面对五种不同风格的对手（强悍型、交换型、公平型、关键变量型、随和型），你的应对策略有何不同？哪一种风格的对手让你觉得最难处理，为什么？</li>
+                </ol>
+                <h4 class="mt-4"><span class="text-emerald-600">启发与应用</span>：延伸思考</h4>
+                <ol class="list-decimal list-inside space-y-2">
+                    <li>除了工程投标，你还能想到哪些商业或工作场景可以应用 BATNA、ZOPA 和价值交换的思维？（例如：与供应商议价、争取项目资源、部门间协作等）请举一个具体例子。</li>
                 </ol>`
         }
     }
@@ -188,6 +192,20 @@ function checkDealCondition(offer, gameState) {
         case 'accommodating': return zopaCount >= 2;
         default: return false;
     }
+}
+
+// 【错误修正】: 将 calculateFinalScore 函式补全并放置在正确的位置
+function calculateFinalScore(gameHistory) {
+    let totalScore = 0;
+    gameHistory.forEach(round => {
+        if (round.isSuccess) {
+            totalScore += 10 + parseFloat(round.satisfaction.user);
+        }
+    });
+    return {
+        score: totalScore.toFixed(1),
+        logic: '總分滿分為 100 分，每輪滿分 20 分。談判成功可獲得 10 分基礎分，並額外加上您的滿意度評分 (最高 10 分)。談判破裂則該輪為 0 分。<p class="en-text">The total score is 100, with a maximum of 20 points per round. A successful deal earns a base of 10 points plus your satisfaction score (up to 10). A failed negotiation scores 0 for the round.</p>'
+    };
 }
 
 function generateAiResponse(offer, gameState) {
@@ -252,6 +270,7 @@ function calculateSatisfactionScores(finalOffer, gameState) {
     const penaltyReasons = [];
     
     const checkOverConcession = (key, offerValue, batnaValue, reason) => {
+        if (!userParams[key] || batnaValue === undefined) return;
         const isHigherBetter = userParams[key].expect > userParams[key].reserve;
         if (isHigherBetter && offerValue < batnaValue) { userSatisfaction -= 2.0; penaltyReasons.push(reason); }
         if (!isHigherBetter && offerValue > batnaValue) { userSatisfaction -= 2.0; penaltyReasons.push(reason); }
@@ -276,11 +295,11 @@ function calculateSatisfactionScores(finalOffer, gameState) {
     let aiSatisfaction = 0;
     const aiParams = isPractice ? THEME_DATA.PRACTICE_PARAMS.ai : THEME_DATA.BASE_PARAMS.ai;
     for (const key in finalOffer) {
-        const aiExpect = aiParams[key].expect;
-        const aiReserve = aiParams[key].reserve;
+        const aiExpect = aiParams[key]?.expect;
+        const aiReserve = aiParams[key]?.reserve;
         if(aiExpect === undefined || aiReserve === undefined) continue;
         const range = Math.abs(aiExpect - aiReserve);
-        if (range === 0) { aiSatisfaction += 2; continue; }
+        if (range === 0) { aiSatisfaction += (10 / Object.keys(finalOffer).length); continue; }
         const progress = Math.abs(finalOffer[key] - aiReserve);
         aiSatisfaction += (progress / range) * (10 / Object.keys(finalOffer).length);
     }
@@ -352,7 +371,7 @@ function generateReportData(gameState, finalOffer, isSuccess) {
                 <td class="p-3 font-medium">${param.name}<p class="en-text font-normal">${param.en_name}</p></td>
                 <td class="p-3 ${finalZopaStatus[key] ? 'text-green-600 font-bold' : ''}">${finalValue.toLocaleString()}${param.unit || ''}</td>
                 <td>${param.expect.toLocaleString()}${param.unit || ''}</td><td>${param.reserve.toLocaleString()}${param.unit || ''}</td>
-                <td>${aiP.reserve ? aiP.reserve.toLocaleString() : '--'}${param.unit || ''}</td><td>${aiP.expect ? aiP.expect.toLocaleString() : '--'}${param.unit || ''}</td>
+                <td>${aiP.reserve !== undefined ? aiP.reserve.toLocaleString() : '--'}${param.unit || ''}</td><td>${aiP.expect !== undefined ? aiP.expect.toLocaleString() : '--'}${param.unit || ''}</td>
             </tr>`;
         }).join(''),
         dealZoneAnalysisHTML: Object.keys(userParams).map(key => {
@@ -381,7 +400,7 @@ const handleAction = {
         
         const THEME_DATA = GAME_THEMES[gameState.theme];
 
-        if (gameState.completedStyles.length >= Object.keys(THEME_DATA.AI_STYLES).length) {
+        if (!isPractice && gameState.completedStyles.length >= Object.keys(THEME_DATA.AI_STYLES).length) {
             return { 
                 isGameOver: true, 
                 gameHistory: gameState.gameHistory, 
@@ -449,7 +468,7 @@ const handleAction = {
             if (key.includes('cost') || key.includes('salary') || key.includes('stipend')) step = (max - min) / 100;
             if (key.includes('prepayment') || key.includes('Collection') || key.includes('slides') || key.includes('writing')) step = 5;
 
-            sliderConfig[key] = { min, max, step: Math.max(1, Math.round(step)) };
+            sliderConfig[key] = { min: Math.floor(min*0.9), max: Math.ceil(max*1.1), step: Math.max(1, Math.round(step)) };
         });
 
         gameState.currentRound = currentRound;
@@ -483,7 +502,8 @@ const handleAction = {
             }
             return { isDeal: true, reportData, token: encodeState(gameState) };
         } else {
-            return { isDeal: false, aiResponseHTML: generateAiResponse(offer, gameState), token: encodeState(gameState) };
+            gameState.currentRound.aiResponse = generateAiResponse(offer, gameState)
+            return { isDeal: false, aiResponseHTML: gameState.currentRound.aiResponse, token: encodeState(gameState) };
         }
     },
     'end': ({ payload, gameState }) => {
