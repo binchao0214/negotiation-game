@@ -29,6 +29,7 @@ const AI_STYLES = {
     key:         { name: '關鍵變量型',   en_name: 'Key-Variable',  desc: '業主對核心利益寸步不讓。成交條件：至少有 3 個談判項落在 ZOPA 內，且其中必須包含「總造價」和「工期」。', en_desc: 'The client is uncompromising on core interests. Deal Condition: At least 3 items in ZOPA, which must include Total Cost and Duration.' },
     accommodating: { name: '隨和型',     en_name: 'Accommodating', desc: '業主態度開放，容易達成。成交條件：至少有 2 個談判項落在雙方的成交區間 (ZOPA) 內。', en_desc: 'The client is open and easy to deal with. Deal Condition: At least 2 negotiation items must fall within the ZOPA.' }
 };
+const USER_BATNA = { cost: 9500000, duration: 300, warranty: 2, prepayment: 15, obligation: 2 };
 
 // --- 辅助函数 (Helper Functions) ---
 function encodeState(state) { try { return btoa(unescape(encodeURIComponent(JSON.stringify(state)))); } catch (e) { console.error('Encoding failed:', e); return ''; } }
@@ -111,7 +112,7 @@ function generateAiResponse(offer, gameState) {
     return responseSet[Math.floor(Math.random() * responseSet.length)];
 }
 
-function calculateSatisfactionScores(finalOffer) {
+function calculateSatisfactionScores(finalOffer, aiParams) {
     const RANGES = { cost: { min: 8500000, max: 11000000 }, duration: { min: 200, max: 350 }, warranty: { min: 1, max: 5 }, prepayment: { min: 10, max: 30 }, obligation: { min: 1, max: 5 } };
     const normalize = (key, value) => (RANGES[key].max - RANGES[key].min === 0) ? 0 : (value - RANGES[key].min) / (RANGES[key].max - RANGES[key].min);
     
@@ -126,10 +127,25 @@ function calculateSatisfactionScores(finalOffer) {
     }
 
     const maxDist = Math.sqrt(Object.keys(finalOffer).length);
-    const userSatisfaction = Math.max(0, 10 * (1 - Math.sqrt(userSqDiff) / maxDist)).toFixed(1);
+    let userSatisfaction = Math.max(0, 10 * (1 - Math.sqrt(userSqDiff) / maxDist));
     const aiSatisfaction = Math.max(0, 10 * (1 - Math.sqrt(aiSqDiff) / maxDist)).toFixed(1);
 
-    return { user: userSatisfaction, ai: aiSatisfaction };
+    // --- Penalty Logic ---
+    let penaltyFactor = 1.0;
+    const penaltyReasons = [];
+    if (finalOffer.cost < aiParams.cost.expect && finalOffer.cost < USER_BATNA.cost) { penaltyFactor -= 0.15; penaltyReasons.push('總造價遠低於市場行情 (Cost was well below market rate)'); }
+    if (finalOffer.duration < aiParams.duration.expect && finalOffer.duration < USER_BATNA.duration) { penaltyFactor -= 0.15; penaltyReasons.push('工期過於倉促 (Duration was unnecessarily short)'); }
+    if (finalOffer.prepayment < aiParams.prepayment.expect && finalOffer.prepayment < USER_BATNA.prepayment) { penaltyFactor -= 0.15; penaltyReasons.push('預付款要求過低 (Prepayment was too low)'); }
+    if (finalOffer.warranty > aiParams.warranty.expect && finalOffer.warranty > USER_BATNA.warranty) { penaltyFactor -= 0.15; penaltyReasons.push('保修期承諾過長 (Warranty period was excessively long)'); }
+    if (finalOffer.obligation > aiParams.obligation.expect && finalOffer.obligation > USER_BATNA.obligation) { penaltyFactor -= 0.15; penaltyReasons.push('承擔了過多附加義務 (Took on too many obligations)'); }
+    
+    userSatisfaction *= penaltyFactor;
+
+    return { 
+        user: Math.max(0, userSatisfaction).toFixed(1),
+        ai: aiSatisfaction,
+        penaltyReasons: penaltyReasons
+    };
 }
 
 function generateReportData(gameState, finalOffer, isSuccess) {
@@ -137,15 +153,12 @@ function generateReportData(gameState, finalOffer, isSuccess) {
     const finalZopaStatus = {};
     for (const key in finalOffer) { finalZopaStatus[key] = isWithinZOPA(key, finalOffer[key], BASE_PARAMS.user[key].reserve, aiParams[key].reserve); }
     
-    const satisfaction = isSuccess ? calculateSatisfactionScores(finalOffer) : { user: '--', ai: '--' };
+    const satisfaction = isSuccess ? calculateSatisfactionScores(finalOffer, aiParams) : { user: '--', ai: '--', penaltyReasons: [] };
 
     const currentRoundHistory = {
-        styleName: aiStyle.name,
-        en_styleName: aiStyle.en_name,
-        isSuccess,
-        satisfaction,
-        offersSubmitted: stats.offers,
-        batnaViews: stats.batnaViews,
+        styleName: aiStyle.name, en_styleName: aiStyle.en_name,
+        isSuccess, satisfaction,
+        offersSubmitted: stats.offers, batnaViews: stats.batnaViews,
         finalOffer: isSuccess ? finalOffer : null
     };
     const updatedGameHistory = [...gameHistory, currentRoundHistory];
@@ -154,6 +167,17 @@ function generateReportData(gameState, finalOffer, isSuccess) {
     let finalScore = null;
     if (isGameOver) {
         finalScore = calculateFinalScore(updatedGameHistory);
+    }
+
+    let smartTipsHTML = `<p><strong>分析 (Analysis):</strong> 您的方案${isSuccess ? '' : '未'}能滿足業主 ${aiStyle.name} (${aiStyle.en_name}) 風格的成交條件。<br>${aiStyle.desc}<br><span class="en-text">${aiStyle.en_desc}</span></p>`;
+    if (isSuccess && satisfaction.penaltyReasons.length > 0) {
+        smartTipsHTML += `<div class="mt-2 pt-2 border-t border-sky-300">
+            <p class="font-bold text-amber-700">警示：您的滿意度被調降，因為您可能做出了過多讓步：</p>
+            <p class="en-text text-amber-600">Warning: Your satisfaction score was penalized for potentially excessive concessions:</p>
+            <ul class="list-disc list-inside text-amber-700 mt-1">
+                ${satisfaction.penaltyReasons.map(reason => `<li>${reason}</li>`).join('')}
+            </ul>
+        </div>`;
     }
 
     return {
@@ -176,7 +200,7 @@ function generateReportData(gameState, finalOffer, isSuccess) {
         }).join(''),
         behaviorStatsHTML: `<li>對話輪次 (Rounds): <strong>${stats.offers}</strong> 次</li><li>查看 BATNA (BATNA Views): <strong>${stats.batnaViews}</strong> 次</li>`,
         satisfactionScoresHTML: `<div class="flex justify-between"><span>您的滿意度 (Your Score):</span><span class="font-bold text-lg">${satisfaction.user} / 10</span></div><div class="flex justify-between"><span>業主滿意度 (Client's Score):</span><span class="font-bold text-lg">${satisfaction.ai} / 10</span></div>`,
-        smartTipsHTML: `<p><strong>分析 (Analysis):</strong> 您的方案${isSuccess ? '' : '未'}能滿足業主 ${aiStyle.name} (${aiStyle.en_name}) 風格的成交條件。<br>${aiStyle.desc}<br><span class="en-text">${aiStyle.en_desc}</span></p>`
+        smartTipsHTML
     };
 }
 
