@@ -126,7 +126,7 @@ function generateReportData(gameState, finalOffer, isSuccess) {
                 <td class="p-3">${BASE_PARAMS.user[key].expect.toLocaleString()}${BASE_PARAMS.user[key].unit}</td>
                 <td class="p-3">${BASE_PARAMS.user[key].reserve.toLocaleString()}${BASE_PARAMS.user[key].unit}</td>
                 <td class="p-3">${aiParams[key].reserve.toLocaleString()}${aiParams[key].unit}</td>
-                <td class="p-3">${aiParams[key].expect.toLocaleString()}${aiParams[key].unit}</td>
+                <td class="p-3">${aiParams[key].expect.toLocaleString()}${BASE_PARAMS.user[key].unit}</td>
             </tr>
         `).join(''),
         dealZoneAnalysisHTML: Object.keys(BASE_PARAMS.user).map(key => {
