@@ -144,14 +144,13 @@ function generateReportData(gameState, finalOffer, isSuccess) {
     
     const satisfaction = isSuccess ? calculateSatisfactionScores(finalOffer) : { user: '--', ai: '--' };
 
-    // Update game history for the current round
     const currentRoundHistory = {
         styleName: aiStyle.name,
         isSuccess,
-        satisfaction
+        satisfaction,
+        offersSubmitted: stats.offers
     };
     const updatedGameHistory = [...gameHistory, currentRoundHistory];
-
     const isGameOver = updatedGameHistory.length >= Object.keys(AI_STYLES).length;
 
     return {
@@ -174,7 +173,7 @@ function generateReportData(gameState, finalOffer, isSuccess) {
             const inZopa = finalZopaStatus[key];
             return `<div><span class="font-medium">${BASE_PARAMS.user[key].name}:</span><span class="ml-2 text-sm font-semibold text-white px-2 py-1 rounded-full ${inZopa ? 'bg-green-500' : 'bg-red-500'}">${inZopa ? '在成交區間內' : '未落在成交區間'}</span></div>`;
         }).join(''),
-        behaviorStatsHTML: `<li>您共提出了 <strong>${stats.offers}</strong> 次方案。</li><li>您查看了 <strong>${stats.batnaViews}</strong> 次 BATNA。</li>`,
+        behaviorStatsHTML: `<li>對話輪次: <strong>${stats.offers}</strong> 次</li><li>查看 BATNA: <strong>${stats.batnaViews}</strong> 次</li>`,
         satisfactionScoresHTML: `<div class="flex justify-between"><span>您的滿意度:</span><span class="font-bold text-lg">${satisfaction.user} / 10</span></div><div class="flex justify-between"><span>業主滿意度:</span><span class="font-bold text-lg">${satisfaction.ai} / 10</span></div>`,
         smartTipsHTML: `<p><strong>分析：</strong>您的方案${isSuccess ? '' : '未'}能滿足業主 ${aiStyle.name} 風格的成交條件 (${aiStyle.desc})。</p>`
     };
@@ -184,14 +183,14 @@ const handleAction = {
     'init': (payload) => {
         let decodedToken = payload.token ? decodeState(payload.token) : null;
         let completedStyles = (decodedToken && decodedToken.completedStyles) ? decodedToken.completedStyles : [];
+        let gameHistory = (decodedToken && decodedToken.gameHistory) ? decodedToken.gameHistory : [];
         
         const allStyleKeys = Object.keys(AI_STYLES);
-        let availableStyles = allStyleKeys.filter(k => !completedStyles.includes(k));
-
-        if (availableStyles.length === 0) {
-            return { isGameOver: true, gameHistory: decodedToken.gameHistory };
+        if (completedStyles.length >= allStyleKeys.length) {
+            return { isGameOver: true, gameHistory: gameHistory };
         }
         
+        let availableStyles = allStyleKeys.filter(k => !completedStyles.includes(k));
         const randomStyleKey = availableStyles[Math.floor(Math.random() * availableStyles.length)];
         
         let gameState = {
@@ -199,14 +198,13 @@ const handleAction = {
             lastPainPoint: null,
             consecutivePainPointCount: 0,
             completedStyles: completedStyles,
-            gameHistory: (decodedToken && decodedToken.gameHistory) ? decodedToken.gameHistory : []
+            gameHistory: gameHistory
         };
 
         gameState.aiStyle = { key: randomStyleKey, ...AI_STYLES[randomStyleKey] };
         gameState.aiParams = generateDynamicParams(randomStyleKey);
         
         let leakText = '情報顯示：業主方';
-        // Leak logic...
         const leakableParams = ['duration', 'warranty', 'prepayment', 'obligation'];
         const shuffledLeaks = leakableParams.sort(() => 0.5 - Math.random());
         const leaksToReveal = shuffledLeaks.slice(0, Math.random() < 0.5 ? 1 : 2);
