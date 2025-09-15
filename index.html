@@ -267,16 +267,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action, ...payload }),
             });
-            const contentType = response.headers.get("content-type");
-            if (!contentType || !contentType.includes("application/json")) {
-                 throw new Error("伺服器返回了無效的回應格式(不是JSON)。這很可能是因為預覽環境無法執行後端程式碼，請在部署後測試。\n\nServer returned an invalid format (not JSON). This is likely because the preview environment cannot execute backend code. Please test after deployment.");
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ details: 'Server returned a non-JSON error response.' }));
+                throw new Error(errorData.details || `Server Error: ${response.status}`);
             }
             const data = await response.json();
-            if (!response.ok) throw new Error(data.details || `伺服器錯誤 (Server Error): ${response.status}`);
             return data;
         } catch (error) {
             console.error('API call failed:', error);
-            alert(`與伺服器通信失敗，請刷新頁面重試。\nCommunication with the server failed, please refresh and try again.\n\n錯誤詳情 (Error Details): ${error.message}`);
+            alert(`與伺服器通信失敗，請檢查網路連線或刷新頁面重試。\nCommunication with the server failed. Please check your network connection or refresh and try again.\n\n錯誤詳情 (Error Details): ${error.message}`);
             return null;
         }
     }
@@ -290,7 +289,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let displayValue = value;
         
         if (paramConfig.format === 'currency') { displayValue = parseInt(value).toLocaleString(); }
-        else if (paramConfig.format === 'percent' || paramConfig.unit === '%') { displayValue = `${value}%`; }
+        else if (paramConfig.format === 'percent' || paramConfig.unit.includes('%')) { displayValue = `${value}%`; }
         else if (paramConfig.format === 'level' && paramConfig.levels) {
             const levelInfo = paramConfig.levels[value];
             displayValue = levelInfo ? `${value} (${levelInfo.name} / ${levelInfo.en_name})` : value;
@@ -366,18 +365,18 @@ document.addEventListener('DOMContentLoaded', () => {
     async function init(payload) {
         switchScreen('scene');
         buttons.themeBtns.forEach(btn => btn.disabled = true);
-        toggleButtonLoading(buttons.startGame, true);
+        toggleButtonLoading(buttons.startGame, true, ' ');
         
         const data = await apiCall('init', payload);
+        buttons.themeBtns.forEach(btn => btn.disabled = false);
         
         if (data) {
             if(data.isGameOver) {
-                renderFinalSummary(data.gameHistory, data.finalScore, data.discussionQuestions, data.finalSummaryTableHeadHTML);
+                renderFinalSummary(data);
                 return;
             }
             gameStateToken = data.token;
-            obligationDefs = data.scene.obligationDefs || {};
-
+            
             displays.sceneTitle.textContent = data.scene.title;
             displays.sceneTitleEn.textContent = data.scene.en_title;
             displays.sceneDescription.innerHTML = data.scene.desc;
@@ -393,7 +392,8 @@ document.addEventListener('DOMContentLoaded', () => {
             displays.aiOpponentTitleEn.textContent = data.scene.aiOpponent.en_name;
 
             displays.obligationTitle.innerHTML = data.scene.obligationTitle;
-            displays.obligationTitleEn.innerHTML = data.scene.obligationTitleEn;
+            displays.obligationTitleEn.innerHTML = data.scene.en_obligationTitle;
+            obligationDefs = data.scene.obligationDefs || {};
             displays.obligationDefsStart.innerHTML = Object.entries(obligationDefs).map(([i, desc]) => {
                 const levelKey = Object.keys(data.scene.userParams).find(k => data.scene.userParams[k].format === 'level');
                 const levelInfo = data.scene.userParams[levelKey]?.levels?.[i] || { name: '', en_name: '' };
@@ -406,8 +406,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 ? '開始練習輪 <span class="text-sky-200 ml-1">Start Practice</span>' 
                 : `開始第 ${data.roundNum} / 5 輪 <span class="text-sky-200 ml-1">Start Round ${data.roundNum}/5</span>`;
             toggleButtonLoading(buttons.startGame, false, buttonText);
+        } else {
+             toggleButtonLoading(buttons.startGame, false, '初始化失敗，請重試');
         }
-        buttons.themeBtns.forEach(btn => btn.disabled = false);
         displays.aiResponse.innerHTML = '等待您提交第一個方案...<p class="en-text">Waiting for your first offer...</p>';
     }
 
@@ -418,14 +419,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 '提交過於頻繁！', 'Submission Too Frequent!',
                 `<p>冷靜一下，思考是談判中最強大的武器！</p><p class="en-text">Calm down, thinking is the most powerful weapon in negotiation!</p><p class="mt-2 text-sm text-amber-700">（此行為已被記錄為一次「非理性思考」）<br><span class="en-text">(This action has been recorded as one "irrational move")</span></p>`
             );
-            const data = await apiCall('irrationalMove', { token: gameStateToken });
-            if (data) gameStateToken = data.token;
+            apiCall('irrationalMove', { token: gameStateToken }).then(data => { if (data) gameStateToken = data.token; });
             return;
         }
         lastSubmitTimestamp = now;
         toggleButtonLoading(buttons.submitOffer, true);
         const offer = Object.fromEntries(Object.entries(currentInputs).map(([key, input]) => [key, parseFloat(input.value)]));
         const data = await apiCall('submit', { token: gameStateToken, offer });
+        toggleButtonLoading(buttons.submitOffer, false);
         if (data) {
             gameStateToken = data.token;
             if (data.isDeal) {
@@ -435,7 +436,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 displays.aiResponse.innerHTML = data.aiResponseHTML;
             }
         }
-        toggleButtonLoading(buttons.submitOffer, false);
     }
 
     function showSuccessAndReport(reportData) {
@@ -484,7 +484,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (data.isGameOver) {
             buttons.nextRound.classList.add('hidden');
             buttons.viewSummary.classList.remove('hidden');
-            buttons.viewSummary.onclick = () => renderFinalSummary(data.gameHistory, data.finalScore, data.discussionQuestions, data.finalSummaryTableHeadHTML);
+            buttons.viewSummary.onclick = () => renderFinalSummary(data);
         } else {
             buttons.nextRound.classList.remove('hidden');
             buttons.viewSummary.classList.add('hidden');
@@ -492,7 +492,8 @@ document.addEventListener('DOMContentLoaded', () => {
         switchScreen('report');
     }
 
-    function renderFinalSummary(gameHistory, finalScore, discussionQuestions, finalSummaryTableHeadHTML) {
+    function renderFinalSummary(data) {
+        const { gameHistory, finalScore, discussionQuestions, finalSummaryTableHeadHTML } = data;
         displays.finalScore.textContent = `${finalScore.score} / 100`;
         displays.finalScoreLogic.innerHTML = finalScore.logic;
         displays.finalSummaryTableHead.innerHTML = finalSummaryTableHeadHTML;
@@ -529,10 +530,13 @@ document.addEventListener('DOMContentLoaded', () => {
     buttons.submitOffer.addEventListener('click', handleSubmitOffer);
     buttons.endNegotiation.addEventListener('click', handleEndNegotiation);
     buttons.nextRound.addEventListener('click', () => init({ token: gameStateToken }));
-    buttons.restartSeries.addEventListener('click', () => { gameStateToken = null; switchScreen('instruction'); });
+    buttons.restartSeries.addEventListener('click', () => { 
+        gameStateToken = null; 
+        switchScreen('themeSelection'); 
+    });
     buttons.viewBatna.addEventListener('click', async () => {
         const data = await apiCall('viewBatna', { token: gameStateToken });
-        if (data) {
+        if (data && data.token) {
             gameStateToken = data.token;
             showModal('您的 BATNA (最佳替代方案)', 'Your BATNA (Best Alternative to a Negotiated Agreement)', data.batnaHTML);
         }
