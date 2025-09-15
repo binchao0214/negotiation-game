@@ -55,7 +55,45 @@
             <p class="en-text">Hone your negotiation skills in a simulated environment</p>
         </header>
 
-        <div id="start-screen" class="screen active space-y-6">
+        <div id="instruction-screen" class="screen active space-y-6">
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-2xl font-bold mb-1">歡迎來到談判練習場</h2>
+                <p class="en-text -mt-1 mb-4">Welcome to the Negotiation Sandbox</p>
+                
+                <div class="space-y-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-sky-700">遊戲目標 (Game Goal)</h3>
+                        <p class="text-slate-600 mt-1">本遊戲旨在幫您練習三大核心談判思維。您的 **BATNA** (最佳替代方案) 決定了您的談判底線；我方的底線與您的底線共同構成了 **ZOPA** (可能成交區間)，所有成功的協議都在此發生；當 ZOPA 過於狹窄時，您需要利用 **Trade-on** (價值交換)，透過放棄次要利益來換取核心利益，從而達成協議。</p>
+                        <p class="en-text text-slate-500">This game helps you practice three core negotiation concepts. Your **BATNA** determines your bottom line. The overlap between your bottom line and your opponent's forms the **ZOPA**, where all successful agreements happen. When the ZOPA is narrow, you must use **Trade-ons** (exchanging concessions on minor issues for gains on major ones) to create value and reach a deal.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-sky-700">行為準則 (Rules of Conduct)</h3>
+                        <ul class="list-disc list-inside space-y-1 mt-1 text-slate-600">
+                            <li><b>五輪挑戰 (Five Rounds Challenge):</b> 您將面對五位風格各異的對手，請盡力在每一輪中達成最佳協議。</li>
+                            <li><b>時間壓力 (Time Pressure):</b> 每輪談判限時 **5 分鐘**，超時將導致談判破裂。</li>
+                            <li><b>深思熟慮 (Think Carefully):</b> 兩次提交方案之間需間隔 **30 秒**。過於倉促的決策將被記錄為「非理性思考」。</li>
+                            <li><b>避免過度讓步 (Avoid Over-concession):</b> 做出遠超對手期望的讓步會被記錄，並影響您的滿意度評分。</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-sky-700">操作步驟 (How to Play)</h3>
+                        <ol class="list-decimal list-inside space-y-1 mt-1 text-slate-600">
+                           <li><b>閱讀開局信息 (Read Initial Info):</b> 點擊下方按鈕，仔細閱讀您的目標及對手情報。</li>
+                           <li><b>開始談判 (Start Negotiating):</b> 點擊「開始談判」按鈕進入談判室。</li>
+                           <li><b>調整與提交 (Adjust & Submit):</b> 使用滑桿調整方案，點擊「提交方案」。</li>
+                           <li><b>複盤與總結 (Review & Summarize):</b> 每輪結束後查看報告，五輪後將提供總結。</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center">
+                <button id="accept-instructions-btn" class="bg-sky-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-sky-700 transition-transform transform hover:scale-105">
+                    我明白了，開始練習 <span class="text-sky-200 ml-1">I Understand, Start Practice</span>
+                </button>
+            </div>
+        </div>
+
+        <div id="start-screen" class="screen space-y-6">
             <div class="bg-white p-6 rounded-lg shadow-md">
                 <h2 class="text-2xl font-bold mb-1">場景設定：商業綜合體總承包</h2>
                 <p class="en-text -mt-1 mb-4 border-b pb-2">Scenario: General Contractor for a Commercial Complex</p>
@@ -104,8 +142,8 @@
                 </div></div></div>
             </div>
             <div class="text-center">
-                <button id="start-game-btn" class="bg-sky-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-sky-700 transition-transform transform hover:scale-105 disabled:bg-slate-400" disabled>
-                    正在載入... <span class="text-sky-200 ml-1">Loading...</span>
+                <button id="start-game-btn" class="bg-sky-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-sky-700 transition-transform transform hover:scale-105 disabled:bg-slate-400 flex items-center justify-center">
+                    開始談判 <span class="text-sky-200 ml-1">Start Negotiation</span>
                 </button>
             </div>
         </div>
@@ -201,8 +239,8 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    const screens = { start: document.getElementById('start-screen'), game: document.getElementById('game-screen'), report: document.getElementById('report-screen'), finalSummary: document.getElementById('final-summary-screen') };
-    const buttons = { startGame: document.getElementById('start-game-btn'), submitOffer: document.getElementById('submit-offer-btn'), endNegotiation: document.getElementById('end-negotiation-btn'), viewBatna: document.getElementById('view-batna-btn'), nextRound: document.getElementById('next-round-btn'), viewSummary: document.getElementById('view-summary-btn'), restartSeries: document.getElementById('restart-series-btn'), modalClose: document.getElementById('modal-close-btn') };
+    const screens = { instruction: document.getElementById('instruction-screen'), start: document.getElementById('start-screen'), game: document.getElementById('game-screen'), report: document.getElementById('report-screen'), finalSummary: document.getElementById('final-summary-screen') };
+    const buttons = { acceptInstructions: document.getElementById('accept-instructions-btn'), startGame: document.getElementById('start-game-btn'), submitOffer: document.getElementById('submit-offer-btn'), endNegotiation: document.getElementById('end-negotiation-btn'), viewBatna: document.getElementById('view-batna-btn'), nextRound: document.getElementById('next-round-btn'), viewSummary: document.getElementById('view-summary-btn'), restartSeries: document.getElementById('restart-series-btn'), modalClose: document.getElementById('modal-close-btn') };
     const inputs = { cost: document.getElementById('cost'), duration: document.getElementById('duration'), warranty: document.getElementById('warranty'), prepayment: document.getElementById('prepayment'), obligation: document.getElementById('obligation') };
     const displays = {
         costValue: document.getElementById('cost-value'), durationValue: document.getElementById('duration-value'), warrantyValue: document.getElementById('warranty-value'), prepaymentValue: document.getElementById('prepayment-value'), obligationValue: document.getElementById('obligation-value'),
@@ -442,6 +480,7 @@ document.addEventListener('DOMContentLoaded', () => {
         switchScreen('finalSummary');
     }
 
+    buttons.acceptInstructions.addEventListener('click', () => init(null));
     buttons.startGame.addEventListener('click', () => { 
         lastSubmitTimestamp = Date.now(); // Reset timestamp for the new round
         switchScreen('game'); 
@@ -459,7 +498,6 @@ document.addEventListener('DOMContentLoaded', () => {
     buttons.modalClose.addEventListener('click', hideModal);
     Object.entries(inputs).forEach(([key, input]) => { if (input) input.addEventListener('input', (e) => updateSliderValue(key, e.target.value)); });
 
-    init(null);
 });
 </script>
 
