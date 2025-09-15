@@ -181,6 +181,7 @@
                                 <th class="p-3">成交方案<p class="en-text font-normal">Deal Terms</p></th>
                                 <th class="p-3">對話輪次<p class="en-text font-normal">Rounds</p></th>
                                 <th class="p-3">BATNA 查看<p class="en-text font-normal">BATNA Views</p></th>
+                                <th class="p-3">過度讓步<p class="en-text font-normal">Over-concessions</p></th>
                                 <th class="p-3">您的滿意度<p class="en-text font-normal">Your Score</p></th>
                                 <th class="p-3">業主滿意度<p class="en-text font-normal">Client's Score</p></th>
                             </tr>
@@ -408,12 +409,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 ? `造價: ${round.finalOffer.cost.toLocaleString()} 元<br><span class="en-text">Cost: ${round.finalOffer.cost.toLocaleString()}</span><br>工期: ${round.finalOffer.duration} 天<br><span class="en-text">Duration: ${round.finalOffer.duration} Days</span>`
                 : '--';
 
+            const overConcessionCount = round.satisfaction.penaltyReasons ? round.satisfaction.penaltyReasons.length : 0;
+
             return `<tr class="border-b">
                 <td class="p-3 font-medium">${round.styleName}<p class="en-text">${round.en_styleName}</p></td>
                 <td class="p-3 font-bold ${resultClass}">${round.isSuccess ? '談成' : '破裂'}<p class="en-text font-normal">${round.isSuccess ? 'Deal' : 'No Deal'}</p></td>
                 <td class="p-3 text-sm">${dealTerms}</td>
                 <td class="p-3 text-center">${round.offersSubmitted}</td>
                 <td class="p-3 text-center">${round.batnaViews}</td>
+                <td class="p-3 text-center text-amber-600 font-bold">${overConcessionCount}</td>
                 <td class="p-3">${userScore}</td>
                 <td class="p-3">${aiScore}</td>
             </tr>`;
