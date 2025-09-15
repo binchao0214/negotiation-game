@@ -88,43 +88,28 @@
             </div>
             <div class="text-center">
                 <button id="accept-instructions-btn" class="bg-sky-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-sky-700 transition-transform transform hover:scale-105">
-                    我明白了，開始練習 <span class="text-sky-200 ml-1">I Understand, Start Practice</span>
+                    我明白了，進入練習輪 <span class="text-sky-200 ml-1">I Understand, Start Practice Round</span>
                 </button>
             </div>
         </div>
 
-        <div id="start-screen" class="screen space-y-6">
+        <div id="scene-screen" class="screen space-y-6">
             <div class="bg-white p-6 rounded-lg shadow-md">
-                <h2 class="text-2xl font-bold mb-1">場景設定：商業綜合體總承包</h2>
-                <p class="en-text -mt-1 mb-4 border-b pb-2">Scenario: General Contractor for a Commercial Complex</p>
-                <p>您將扮演 <span class="font-bold text-sky-600">承包商 (Contractor)</span>，與 AI 扮演的 <span class="font-bold text-red-600">業主 (Client)</span> 就一個新的商業綜合體建設項目進行總承包談判。您的核心利益參數和談判底線（BATNA）如下：</p>
-                <p class="en-text">You will play as the <span class="font-bold text-sky-600">Contractor</span>, negotiating with an AI <span class="font-bold text-red-600">Client</span> for a new commercial complex project. Your core interests and BATNA are as follows:</p>
+                <h2 id="scene-title" class="text-2xl font-bold mb-1"></h2>
+                <p id="scene-title-en" class="en-text -mt-1 mb-4 border-b pb-2"></p>
+                <p id="scene-description"></p>
+                <p id="scene-description-en" class="en-text"></p>
             </div>
             <div class="grid md:grid-cols-2 gap-6">
                 <div class="bg-white p-6 rounded-lg shadow-md">
                     <h3 class="text-xl font-bold mb-1">您的核心利益參數</h3>
                     <p class="en-text -mt-1 mb-4">Your Core Interests</p>
-                    <ul class="space-y-3">
-                        <li><strong>總造價 (Total Cost)</strong>: 期望 <span class="text-green-600">10,500,000</span> | 底線 <span class="text-red-600">9,000,000</span></li>
-                        <li><strong>工期 (Duration)</strong>: 期望 <span class="text-green-600">330</span> 天 | 底線 <span class="text-red-600">240</span> 天</li>
-                        <li><strong>保修期 (Warranty)</strong>: 期望 <span class="text-green-600">1</span> 年 | 底線 <span class="text-red-600">4</span> 年</li>
-                        <li><strong>預付款 (Prepayment)</strong>: 期望 <span class="text-green-600">25</span>% | 底線 <span class="text-red-600">15</span>%</li>
-                        <li><strong>附加義務等級 (Obligation Level)</strong>: 期望 <span class="text-green-600">1 (輕度)</span> | 底線 <span class="text-red-600">4 (重度)</span></li>
-                    </ul>
+                    <ul id="scene-user-params" class="space-y-3"></ul>
                 </div>
                 <div class="bg-white p-6 rounded-lg shadow-md">
                     <h3 class="text-xl font-bold mb-1">您的 BATNA (最佳替代方案)</h3>
-                    <p class="en-text -mt-1 mb-4">Your BATNA (Best Alternative to a Negotiated Agreement)</p>
-                    <div class="bg-amber-100 border-l-4 border-amber-500 text-amber-800 p-4 rounded-r-lg">
-                        <p>接受另一個住宅項目合約 (Accept another residential project contract):</p>
-                        <ul class="list-disc list-inside mt-2">
-                            <li>報價 (Price): 9,500,000 元</li>
-                            <li>工期 (Duration): 300 天</li>
-                            <li>保修期 (Warranty): 2 年</li>
-                            <li>預付款 (Prepayment): 15%</li>
-                            <li>附加義務 (Obligation): 等級 2 (一般/General)</li>
-                        </ul>
-                    </div>
+                    <p class="en-text -mt-1 mb-4">Your BATNA</p>
+                    <div id="scene-user-batna" class="bg-amber-100 border-l-4 border-amber-500 text-amber-800 p-4 rounded-r-lg"></div>
                 </div>
             </div>
             <div class="bg-white p-6 rounded-lg shadow-md">
@@ -143,7 +128,7 @@
             </div>
             <div class="text-center">
                 <button id="start-game-btn" class="bg-sky-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-sky-700 transition-transform transform hover:scale-105 disabled:bg-slate-400 flex items-center justify-center">
-                    開始談判 <span class="text-sky-200 ml-1">Start Negotiation</span>
+                    <!-- Text set by JS -->
                 </button>
             </div>
         </div>
@@ -239,10 +224,12 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    const screens = { instruction: document.getElementById('instruction-screen'), start: document.getElementById('start-screen'), game: document.getElementById('game-screen'), report: document.getElementById('report-screen'), finalSummary: document.getElementById('final-summary-screen') };
+    const screens = { instruction: document.getElementById('instruction-screen'), scene: document.getElementById('scene-screen'), game: document.getElementById('game-screen'), report: document.getElementById('report-screen'), finalSummary: document.getElementById('final-summary-screen') };
     const buttons = { acceptInstructions: document.getElementById('accept-instructions-btn'), startGame: document.getElementById('start-game-btn'), submitOffer: document.getElementById('submit-offer-btn'), endNegotiation: document.getElementById('end-negotiation-btn'), viewBatna: document.getElementById('view-batna-btn'), nextRound: document.getElementById('next-round-btn'), viewSummary: document.getElementById('view-summary-btn'), restartSeries: document.getElementById('restart-series-btn'), modalClose: document.getElementById('modal-close-btn') };
     const inputs = { cost: document.getElementById('cost'), duration: document.getElementById('duration'), warranty: document.getElementById('warranty'), prepayment: document.getElementById('prepayment'), obligation: document.getElementById('obligation') };
     const displays = {
+        sceneTitle: document.getElementById('scene-title'), sceneTitleEn: document.getElementById('scene-title-en'), sceneDescription: document.getElementById('scene-description'), sceneDescriptionEn: document.getElementById('scene-description-en'),
+        sceneUserParams: document.getElementById('scene-user-params'), sceneUserBatna: document.getElementById('scene-user-batna'),
         costValue: document.getElementById('cost-value'), durationValue: document.getElementById('duration-value'), warrantyValue: document.getElementById('warranty-value'), prepaymentValue: document.getElementById('prepayment-value'), obligationValue: document.getElementById('obligation-value'),
         obligationDescGame: document.getElementById('obligation-description-game'), obligationDefsStart: document.getElementById('obligation-definitions-start'), aiResponse: document.getElementById('ai-response'), 
         aiStyleInfo: document.getElementById('ai-style-info'), aiStyleInfoEn: document.getElementById('ai-style-info-en'), aiLeakedInfo: document.getElementById('ai-leaked-info'),
@@ -310,15 +297,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (displays[`${key}Value`]) displays[`${key}Value`].textContent = displayValue;
     }
-    function toggleButtonLoading(button, isLoading) {
+    function toggleButtonLoading(button, isLoading, text = '') {
         if (!button) return;
         if (isLoading) {
             button.disabled = true;
-            button.dataset.originalText = button.innerHTML;
+            if (!button.dataset.originalText) {
+                 button.dataset.originalText = button.innerHTML;
+            }
             button.innerHTML = `<div class="loading-spinner"></div>`;
         } else {
             button.disabled = false;
-            if (button.dataset.originalText) button.innerHTML = button.dataset.originalText;
+            if (text) {
+                button.innerHTML = text;
+                button.dataset.originalText = text;
+            } else if (button.dataset.originalText) {
+                button.innerHTML = button.dataset.originalText;
+            }
         }
     }
 
@@ -346,7 +340,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     async function init(token = null) {
-        switchScreen('start');
+        switchScreen('scene');
         toggleButtonLoading(buttons.startGame, true);
         
         const data = await apiCall('init', { token });
@@ -357,15 +351,32 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             gameStateToken = data.token;
+
+            // Populate Scene Screen
+            displays.sceneTitle.textContent = data.scene.title;
+            displays.sceneTitleEn.textContent = data.scene.en_title;
+            displays.sceneDescription.innerHTML = data.scene.desc;
+            displays.sceneDescriptionEn.innerHTML = data.scene.en_desc;
+            displays.sceneUserParams.innerHTML = Object.values(data.scene.userParams).map(p => `<li><strong>${p.name} (${p.en_name})</strong>: 期望 <span class="text-green-600">${p.expect.toLocaleString()}</span> | 底線 <span class="text-red-600">${p.reserve.toLocaleString()}</span></li>`).join('');
+            displays.sceneUserBatna.innerHTML = data.scene.userBatna;
+
             displays.aiStyleInfo.textContent = data.aiStyleName;
             displays.aiStyleInfoEn.textContent = data.aiStyleEnName;
             displays.aiLeakedInfo.innerHTML = data.leakedInfoHTML;
             
             for (const key in data.initialOffer) {
-                if (inputs[key]) inputs[key].value = data.initialOffer[key];
+                const param = data.sliderConfig[key];
+                if (inputs[key]) {
+                    inputs[key].min = param.min;
+                    inputs[key].max = param.max;
+                    inputs[key].step = param.step;
+                    inputs[key].value = data.initialOffer[key];
+                }
             }
-
-            toggleButtonLoading(buttons.startGame, false);
+            const buttonText = data.isPractice 
+                ? '開始練習輪 <span class="text-sky-200 ml-1">Start Practice</span>' 
+                : `開始第 ${data.roundNum} / 5 輪 <span class="text-sky-200 ml-1">Start Round ${data.roundNum}/5</span>`;
+            toggleButtonLoading(buttons.startGame, false, buttonText);
         }
 
         displays.obligationDefsStart.innerHTML = Object.entries(OBLIGATION_DEFS).map(([i, desc]) => `<p><span class="font-bold">等級 ${i} (${OBLIGATION_LEVELS[i].name} / ${OBLIGATION_LEVELS[i].en_name}):</span> ${desc}</p>`).join('');
@@ -380,8 +391,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const now = Date.now();
         if (now - lastSubmitTimestamp < 30000) {
             showModal(
-                '提交過於頻繁！',
-                'Submission Too Frequent!',
+                '提交過於頻繁！', 'Submission Too Frequent!',
                 `<p>你家不是開銀行的，請你仔細思考後再提出方案！</p><p class="en-text">Your family doesn't own a bank, please think carefully before making another offer!</p><p class="mt-2 text-sm text-amber-700">（此行為已被記錄為一次「非理性思考」）<br><span class="en-text">(This action has been recorded as one "irrational move")</span></p>`
             );
             const data = await apiCall('irrationalMove', { token: gameStateToken });
@@ -439,6 +449,12 @@ document.addEventListener('DOMContentLoaded', () => {
         displays.satisfactionScores.innerHTML = data.satisfactionScoresHTML;
         displays.smartTips.innerHTML = data.smartTipsHTML;
         
+        if (data.isPracticeRoundOver) {
+            buttons.nextRound.innerHTML = '開始正式挑戰 <span class="text-sky-200">Start Official Challenge</span>';
+        } else {
+            buttons.nextRound.innerHTML = '下一輪 <span class="text-sky-200">Next Round</span>';
+        }
+
         if (data.isGameOver) {
             buttons.nextRound.classList.add('hidden');
             buttons.viewSummary.classList.remove('hidden');
@@ -497,7 +513,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     buttons.modalClose.addEventListener('click', hideModal);
     Object.entries(inputs).forEach(([key, input]) => { if (input) input.addEventListener('input', (e) => updateSliderValue(key, e.target.value)); });
-
 });
 </script>
 
