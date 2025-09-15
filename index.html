@@ -289,7 +289,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let displayValue = value;
         
         if (paramConfig.format === 'currency') { displayValue = parseInt(value).toLocaleString(); }
-        else if (paramConfig.format === 'percent' || paramConfig.unit.includes('%')) { displayValue = `${value}%`; }
+        else if (paramConfig.format === 'percent' || (paramConfig.unit && paramConfig.unit.includes('%'))) { displayValue = `${value}%`; }
         else if (paramConfig.format === 'level' && paramConfig.levels) {
             const levelInfo = paramConfig.levels[value];
             displayValue = levelInfo ? `${value} (${levelInfo.name} / ${levelInfo.en_name})` : value;
@@ -297,6 +297,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (descElement && obligationDefs[value]) {
                 descElement.innerHTML = `等級 ${value}: ${obligationDefs[value]}`;
             }
+        } else {
+             displayValue = `${value.toLocaleString()}${paramConfig.unit || ''}`;
         }
         
         const valueDisplay = document.getElementById(`${key}-value`);
@@ -370,7 +372,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = await apiCall('init', payload);
         buttons.themeBtns.forEach(btn => btn.disabled = false);
         
-        if (data) {
+        if (data && data.scene) {
             if(data.isGameOver) {
                 renderFinalSummary(data);
                 return;
@@ -419,7 +421,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 '提交過於頻繁！', 'Submission Too Frequent!',
                 `<p>冷靜一下，思考是談判中最強大的武器！</p><p class="en-text">Calm down, thinking is the most powerful weapon in negotiation!</p><p class="mt-2 text-sm text-amber-700">（此行為已被記錄為一次「非理性思考」）<br><span class="en-text">(This action has been recorded as one "irrational move")</span></p>`
             );
-            apiCall('irrationalMove', { token: gameStateToken }).then(data => { if (data) gameStateToken = data.token; });
+            apiCall('irrationalMove', { token: gameStateToken }).then(data => { if (data && data.token) gameStateToken = data.token; });
             return;
         }
         lastSubmitTimestamp = now;
@@ -427,7 +429,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const offer = Object.fromEntries(Object.entries(currentInputs).map(([key, input]) => [key, parseFloat(input.value)]));
         const data = await apiCall('submit', { token: gameStateToken, offer });
         toggleButtonLoading(buttons.submitOffer, false);
-        if (data) {
+        if (data && data.token) {
             gameStateToken = data.token;
             if (data.isDeal) {
                 stopTimer();
@@ -484,7 +486,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (data.isGameOver) {
             buttons.nextRound.classList.add('hidden');
             buttons.viewSummary.classList.remove('hidden');
-            buttons.viewSummary.onclick = () => renderFinalSummary(data);
+            buttons.viewSummary.onclick = () => init({ token: gameStateToken });
         } else {
             buttons.nextRound.classList.remove('hidden');
             buttons.viewSummary.classList.add('hidden');
