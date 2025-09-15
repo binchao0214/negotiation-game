@@ -1,6 +1,4 @@
-//【稳定重构版】negotiate.js
-
-// --- 核心设定 (保持不变) ---
+// --- 核心设定 ---
 const OBLIGATION_LEVELS = { 1: { name: '輕度義務' }, 2: { name: '一般義務' }, 3: { name: '中度義務' }, 4: { name: '重度義務' }, 5: { name: '全面義務' } };
 const BASE_PARAMS = {
     user: {
@@ -19,9 +17,31 @@ const AI_STYLES = {
     accommodating: { name: '隨和型', desc: '業主態度開放，容易達成。成交條件：至少有 2 個談判項落在雙方的成交區間 (ZOPA) 內。' }
 };
 
-// --- 核心辅助函数 (保持不变) ---
-function encodeState(state) { return Buffer.from(JSON.stringify(state)).toString('base64'); }
-function decodeState(token) { try { return JSON.parse(Buffer.from(token, 'base64').toString('utf-8')); } catch (e) { return null; } }
+// --- 辅助函数 ---
+
+// 使用 btoa 和 atob 进行 Base64 编解码，兼容 Cloudflare 环境
+function encodeState(state) {
+    try {
+        const jsonString = JSON.stringify(state);
+        // URL-safe Base64 encoding
+        return btoa(unescape(encodeURIComponent(jsonString)));
+    } catch (e) {
+        console.error('Encoding failed:', e);
+        return '';
+    }
+}
+
+function decodeState(token) {
+    try {
+        // URL-safe Base64 decoding
+        const jsonString = decodeURIComponent(escape(atob(token)));
+        return JSON.parse(jsonString);
+    } catch (e) {
+        console.error('Decoding failed:', e);
+        return null;
+    }
+}
+
 function generateDynamicParams(styleKey) {
     const flexibilityFactors = { tough: 0.4, horseTrader: 0.6, fair: 0.8, key: 0.7, accommodating: 1.0 };
     const baseAiParams = {
@@ -78,10 +98,7 @@ function generateAiResponse(offer, gameState) {
     const paramName = aiParams[mainPainPoint.key].name;
     if (gameState.lastPainPoint === mainPainPoint.key) { gameState.consecutivePainPointCount++; } 
     else { gameState.lastPainPoint = mainPainPoint.key; gameState.consecutivePainPointCount = 1; }
-    const responses = [
-        `關於<strong>${paramName}</strong>，您提出的 ${mainPainPoint.userValue.toLocaleString()} 條件，與我方的預期差距有點大。`,
-        `我理解您的立場，但在<strong>${paramName}</strong>這項上，我們恐怕無法接受 ${mainPainPoint.userValue.toLocaleString()} 這個數字。`,
-    ];
+    const responses = [ `關於<strong>${paramName}</strong>，您提出的 ${mainPainPoint.userValue.toLocaleString()} 條件，與我方的預期差距有點大。`, `我理解您的立場，但在<strong>${paramName}</strong>這項上，我們恐怕無法接受 ${mainPainPoint.userValue.toLocaleString()} 這個數字。`, ];
     if (gameState.consecutivePainPointCount >= 2) { return `我們似乎在<strong>${paramName}</strong>上卡關了。這個條件 ${mainPainPoint.userValue.toLocaleString()} 對我們來說確實是個障礙，您能否在其他方面做些讓步來平衡一下？`; }
     return responses[Math.floor(Math.random() * responses.length)];
 }
@@ -101,7 +118,7 @@ function generateReportData(gameState, finalOffer, isSuccess) {
     };
 }
 
-// --- 路由器和主处理函数 (重构和简化) ---
+// --- 路由器和主处理函数 ---
 const handleAction = {
     'init': () => {
         let gameState = { stats: { offers: 0, batnaViews: 0 }, lastPainPoint: null, consecutivePainPointCount: 0 };
