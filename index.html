@@ -176,12 +176,13 @@
                     <table class="w-full text-sm text-left">
                         <thead class="bg-slate-100">
                             <tr>
-                                <th class="p-3">談判風格<p class="en-text font-normal">Negotiation Style</p></th>
+                                <th class="p-3">談判風格<p class="en-text font-normal">Style</p></th>
                                 <th class="p-3">結果<p class="en-text font-normal">Result</p></th>
+                                <th class="p-3">成交方案<p class="en-text font-normal">Deal Terms</p></th>
                                 <th class="p-3">對話輪次<p class="en-text font-normal">Rounds</p></th>
-                                <th class="p-3">BATNA 查看次數<p class="en-text font-normal">BATNA Views</p></th>
-                                <th class="p-3">您的滿意度<p class="en-text font-normal">Your Satisfaction</p></th>
-                                <th class="p-3">業主滿意度<p class="en-text font-normal">Client's Satisfaction</p></th>
+                                <th class="p-3">BATNA 查看<p class="en-text font-normal">BATNA Views</p></th>
+                                <th class="p-3">您的滿意度<p class="en-text font-normal">Your Score</p></th>
+                                <th class="p-3">業主滿意度<p class="en-text font-normal">Client's Score</p></th>
                             </tr>
                         </thead>
                         <tbody id="final-summary-table-body">
@@ -402,9 +403,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const resultClass = round.isSuccess ? 'text-green-600' : 'text-red-600';
             const userScore = round.satisfaction.user !== '--' ? `${round.satisfaction.user} / 10` : '--';
             const aiScore = round.satisfaction.ai !== '--' ? `${round.satisfaction.ai} / 10` : '--';
+            
+            const dealTerms = round.isSuccess && round.finalOffer 
+                ? `造價: ${round.finalOffer.cost.toLocaleString()} 元<br><span class="en-text">Cost: ${round.finalOffer.cost.toLocaleString()}</span><br>工期: ${round.finalOffer.duration} 天<br><span class="en-text">Duration: ${round.finalOffer.duration} Days</span>`
+                : '--';
+
             return `<tr class="border-b">
                 <td class="p-3 font-medium">${round.styleName}<p class="en-text">${round.en_styleName}</p></td>
                 <td class="p-3 font-bold ${resultClass}">${round.isSuccess ? '談成' : '破裂'}<p class="en-text font-normal">${round.isSuccess ? 'Deal' : 'No Deal'}</p></td>
+                <td class="p-3 text-sm">${dealTerms}</td>
                 <td class="p-3 text-center">${round.offersSubmitted}</td>
                 <td class="p-3 text-center">${round.batnaViews}</td>
                 <td class="p-3">${userScore}</td>
