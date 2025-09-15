@@ -5,24 +5,26 @@ const SCENARIOS = {
         title: '練習輪：辦公室裝修', en_title: 'Practice Round: Office Renovation',
         desc: '您將為一間新創公司的辦公室進行裝修工程。', en_desc: 'You will be renovating the office for a startup company.',
         coolDownMessage: { zh: '想清楚再出牌！合約上的每個字都代表成本。', en: 'Think twice before you make a move! Every word on the contract represents cost.'},
+        successMessage: { zh: '做得不錯，順利完成裝修合約！', en: 'Good job on finalizing the renovation contract!' },
         params: {
-            user: { cost: { expect: 1500000, reserve: 1200000, name: '總造價', en_name: 'Total Cost', unit: '元' }, duration: { expect: 60, reserve: 45, name: '工期', en_name: 'Duration', unit: '天' }, warranty: { expect: 1, reserve: 2, name: '保修期', en_name: 'Warranty', unit: '年' }, prepayment: { expect: 30, reserve: 20, name: '預付款', en_name: 'Prepayment', unit: '%' }, obligation: { expect: 1, reserve: 2, name: '附加義務等級', en_name: 'Obligation Level', unit: '' } },
-            ai: { cost: { expect: 1100000, reserve: 1400000, name: '總造價', en_name: 'Total Cost' }, duration: { expect: 40, reserve: 55, name: '工期', en_name: 'Duration' }, warranty: { expect: 3, reserve: 1, name: '保修期', en_name: 'Warranty' }, prepayment: { expect: 10, reserve: 25, name: '預付款', en_name: 'Prepayment' }, obligation: { expect: 3, reserve: 1, name: '附加義務等級', en_name: 'Obligation Level' } }
+            user: { param1: { expect: 1500000, reserve: 1200000, name: '總造價', en_name: 'Total Cost', unit: '元' }, param2: { expect: 60, reserve: 45, name: '工期', en_name: 'Duration', unit: '天' }, param3: { expect: 1, reserve: 2, name: '保修期', en_name: 'Warranty', unit: '年' }, param4: { expect: 30, reserve: 20, name: '預付款', en_name: 'Prepayment', unit: '%' }, param5: { expect: 1, reserve: 2, name: '附加義務等級', en_name: 'Obligation Level', unit: '' } },
+            ai: { param1: { expect: 1100000, reserve: 1400000 }, param2: { expect: 40, reserve: 55 }, param3: { expect: 3, reserve: 1 }, param4: { expect: 10, reserve: 25 }, param5: { expect: 3, reserve: 1 } }
         },
-        batna: { text: '接受另一個報價 1,300,000 元，工期 50 天的案子。<p class="en-text">Accept another project with a price of 1,300,000 and a 50-day duration.</p>', values: { cost: 1350000, duration: 50, warranty: 1, prepayment: 20, obligation: 1 } },
-        sliderConfig: { cost: { min: 1000000, max: 1600000, step: 10000 }, duration: { min: 30, max: 70, step: 1 }, warranty: { min: 1, max: 3, step: 1 }, prepayment: { min: 10, max: 40, step: 1 }, obligation: { min: 1, max: 3, step: 1 } }
+        batna: { text: '接受另一個報價 1,300,000 元，工期 50 天的案子。<p class="en-text">Accept another project with a price of 1,300,000 and a 50-day duration.</p>', values: { param1: 1350000, param2: 50, param3: 1, param4: 20, param5: 1 } },
+        sliderConfig: { param1: { min: 1000000, max: 1600000, step: 10000 }, param2: { min: 30, max: 70, step: 1 }, param3: { min: 1, max: 3, step: 1 }, param4: { min: 10, max: 40, step: 1 }, param5: { min: 1, max: 3, step: 1 } }
     },
     professional: {
         id: 'professional',
         title: '正式挑戰：商業綜合體總承包', en_title: 'Official Challenge: General Contractor for a Commercial Complex',
         desc: '您將為一個新的商業綜合體建設項目進行總承包談判。', en_desc: 'You will negotiate the general contract for a new commercial complex project.',
         coolDownMessage: { zh: '你家不是開銀行的，請仔細思考後再提出方案！', en: 'Your family doesn\'t own a bank, please think carefully before making an offer!' },
+        successMessage: { zh: '這工程有勞你了！', en: 'We\'re counting on you for this project!' },
         params: {
-            user: { cost: { expect: 10500000, reserve: 9000000, name: '總造價', en_name: 'Total Cost', unit: '元' }, duration: { expect: 330, reserve: 240, name: '工期', en_name: 'Duration', unit: '天' }, warranty: { expect: 1, reserve: 4, name: '保修期', en_name: 'Warranty', unit: '年' }, prepayment: { expect: 25, reserve: 15, name: '預付款', en_name: 'Prepayment', unit: '%' }, obligation: { expect: 1, reserve: 4, name: '附加義務等級', en_name: 'Obligation Level', unit: '' } },
-            ai: { cost: { expect: 8500000, reserve: 10000000, name: '總造價' }, duration: { expect: 210, reserve: 270, name: '工期' }, warranty: { expect: 5, reserve: 3, name: '保修期' }, prepayment: { expect: 10, reserve: 20, name: '預付款' }, obligation: { expect: 5, reserve: 3, name: '附加義務等級' } }
+            user: { param1: { expect: 10500000, reserve: 9000000, name: '總造價', en_name: 'Total Cost', unit: '元' }, param2: { expect: 330, reserve: 240, name: '工期', en_name: 'Duration', unit: '天' }, param3: { expect: 1, reserve: 4, name: '保修期', en_name: 'Warranty', unit: '年' }, param4: { expect: 25, reserve: 15, name: '預付款', en_name: 'Prepayment', unit: '%' }, param5: { expect: 1, reserve: 4, name: '附加義務等級', en_name: 'Obligation Level', unit: '' } },
+            ai: { param1: { expect: 8500000, reserve: 10000000 }, param2: { expect: 210, reserve: 270 }, param3: { expect: 5, reserve: 3 }, param4: { expect: 10, reserve: 20 }, param5: { expect: 5, reserve: 3 } }
         },
-        batna: { text: '接受另一個住宅項目合約。<p class="en-text">Accept another residential project contract.</p>', values: { cost: 9500000, duration: 300, warranty: 2, prepayment: 15, obligation: 2 } },
-        sliderConfig: { cost: { min: 8500000, max: 11000000, step: 50000 }, duration: { min: 200, max: 350, step: 5 }, warranty: { min: 1, max: 5, step: 1 }, prepayment: { min: 10, max: 30, step: 1 }, obligation: { min: 1, max: 5, step: 1 } },
+        batna: { text: '接受另一個住宅項目合約。<p class="en-text">Accept another residential project contract.</p>', values: { param1: 9500000, param2: 300, param3: 2, param4: 15, param5: 2 } },
+        sliderConfig: { param1: { min: 8500000, max: 11000000, step: 50000 }, param2: { min: 200, max: 350, step: 5 }, param3: { min: 1, max: 5, step: 1 }, param4: { min: 10, max: 30, step: 1 }, param5: { min: 1, max: 5, step: 1 } },
         discussionQuestions: [
             { zh: '在面對「強悍型」或「關鍵變量型」對手時，你的情緒或決策受到了什麼影響？結合你的總結報告，你認為你的應對策略成功了嗎？如果再有一次機會，你會做什麼不同的嘗試？', en: 'When facing a "Tough" or "Key-Variable" opponent, how were your emotions or decisions affected? Based on your summary report, do you think your coping strategy was successful? If you had another chance, what would you do differently?'},
             { zh: '除了遊戲中的五個變數，回想一個你最近在工作中遇到的（不一定成功）溝通場景。你認為當時是否存在可以進行 Trade-on（價值交換）的潛在機會？如果有的話，會是什麼？', en: 'Besides the five variables in the game, recall a recent communication scenario at work (successful or not). Do you think there were potential opportunities for a Trade-on? If so, what were they?'},
@@ -34,12 +36,13 @@ const SCENARIOS = {
         title: '正式挑戰：爭取實習 Offer', en_title: 'Official Challenge: Internship Offer Negotiation',
         desc: '在獲得一家心儀公司的實習 Offer 後，與 HR 就薪資、實習時長、專案內容等進行談判。', en_desc: 'After receiving an internship offer from your dream company, negotiate terms like salary, duration, and project scope with HR.',
         coolDownMessage: { zh: 'HR 的時間很寶貴，想清楚再開口！', en: 'An HR\'s time is precious, think carefully before you speak!' },
+        successMessage: { zh: '恭喜你，期待你的加入！', en: 'Congratulations, we look forward to having you on board!' },
         params: {
-            user: { cost: { expect: 20000, reserve: 15000, name: '月薪', en_name: 'Monthly Salary', unit: '元' }, duration: { expect: 60, reserve: 90, name: '實習時長', en_name: 'Internship Duration', unit: '天' }, warranty: { expect: 1, reserve: 3, name: '專案類型', en_name: 'Project Type', unit: '' }, prepayment: { expect: 5000, reserve: 0, name: '交通補貼', en_name: 'Commuting Allowance', unit: '元' }, obligation: { expect: 1, reserve: 2, name: '加班頻率', en_name: 'Overtime Frequency', unit: '' } },
-            ai: { cost: { expect: 12000, reserve: 18000, name: '月薪' }, duration: { expect: 90, reserve: 60, name: '實習時長' }, warranty: { expect: 3, reserve: 1, name: '專案類型' }, prepayment: { expect: 0, reserve: 3000, name: '交通補貼' }, obligation: { expect: 3, reserve: 1, name: '加班頻率' } }
+            user: { param1: { expect: 20000, reserve: 15000, name: '月薪', en_name: 'Monthly Salary', unit: '元' }, param2: { expect: 60, reserve: 90, name: '實習時長', en_name: 'Internship Duration', unit: '天' }, param3: { expect: 1, reserve: 3, name: '專案類型', en_name: 'Project Type', unit: '' }, param4: { expect: 5000, reserve: 0, name: '交通補貼', en_name: 'Commuting Allowance', unit: '元' }, param5: { expect: 1, reserve: 2, name: '加班頻率', en_name: 'Overtime Frequency', unit: '' } },
+            ai: { param1: { expect: 12000, reserve: 18000 }, param2: { expect: 90, reserve: 60 }, param3: { expect: 3, reserve: 1 }, param4: { expect: 0, reserve: 3000 }, param5: { expect: 3, reserve: 1 } }
         },
-        batna: { text: '接受另一家公司月薪 16,000，但專案類型普通的 Offer。<p class="en-text">Accept an offer from another company with a 16,000 monthly salary but a less interesting project.</p>', values: { cost: 16000, duration: 90, warranty: 2, prepayment: 0, obligation: 2 } },
-        sliderConfig: { cost: { min: 10000, max: 22000, step: 500 }, duration: { min: 50, max: 100, step: 5 }, warranty: { min: 1, max: 3, step: 1 }, prepayment: { min: 0, max: 6000, step: 200 }, obligation: { min: 1, max: 3, step: 1 } },
+        batna: { text: '接受另一家公司月薪 16,000，但專案類型普通的 Offer。<p class="en-text">Accept an offer from another company with a 16,000 monthly salary but a less interesting project.</p>', values: { param1: 16000, param2: 90, param3: 2, param4: 0, param5: 2 } },
+        sliderConfig: { param1: { min: 10000, max: 22000, step: 500 }, param2: { min: 50, max: 100, step: 5 }, param3: { min: 1, max: 3, step: 1 }, param4: { min: 0, max: 6000, step: 200 }, param5: { min: 1, max: 3, step: 1 } },
         discussionQuestions: [
             { zh: '回顧你的總結報告，在哪一輪（或哪一種對手風格）中，你感覺 ZOPA（可能成交區間）最為狹窄？你是如何察覺到這一點的？你當時採取了什麼策略來試圖達成協議？', en: 'Review your summary report. In which round (or against which opponent style) did you feel the ZOPA (Zone of Possible Agreement) was the narrowest? How did you notice this? What strategy did you use to try to reach an agreement?'},
             { zh: '你的 BATNA（最佳替代方案）在整個決策過程中扮演了什麼角色？在哪個時刻，「查看 BATNA」這個動作對你接下來的出價產生了最關鍵的影響？', en: 'What role did your BATNA (Best Alternative to a Negotiated Agreement) play in your decision-making process? At what moment did the action of "viewing your BATNA" have the most critical impact on your subsequent offers?'},
@@ -51,12 +54,13 @@ const SCENARIOS = {
         title: '正式挑戰：親子 3C 使用協議', en_title: 'Official Challenge: Parent-Child Screen Time Agreement',
         desc: '扮演家長，與 AI 扮演的孩子協商使用 3C 產品的規則。', en_desc: 'Play as a parent negotiating screen time rules with your AI child.',
         coolDownMessage: { zh: '不好好想的話，以後孩子就不聽你的了！', en: 'If you don\'t think carefully, your kids won\'t listen to you anymore!' },
+        successMessage: { zh: '你們達成了協議，要好好遵守喔！', en: 'You\'ve reached an agreement, make sure to stick to it!' },
         params: {
-            user: { cost: { expect: 30, reserve: 60, name: '平日每日時長(分)', en_name: 'Weekday Daily Time (min)', unit: '分' }, duration: { expect: 60, reserve: 120, name: '假日每日時長(分)', en_name: 'Weekend Daily Time (min)', unit: '分' }, warranty: { expect: 1, reserve: 3, name: '可玩遊戲類型(限制級)', en_name: 'Allowed Game Rating', unit: '' }, prepayment: { expect: 30, reserve: 0, name: '獎勵時間(分)', en_name: 'Bonus Time (min)', unit: '分' }, obligation: { expect: 22, reserve: 21, name: '睡前禁用(時間點)', en_name: 'Bedtime Cutoff (Time)', unit: '' } },
-            ai: { cost: { expect: 90, reserve: 45, name: '平日每日時長(分)' }, duration: { expect: 180, reserve: 90, name: '假日每日時長(分)' }, warranty: { expect: 3, reserve: 1, name: '可玩遊戲類型(限制級)' }, prepayment: { expect: 60, reserve: 15, name: '獎勵時間(分)' }, obligation: { expect: 20, reserve: 21.5, name: '睡前禁用(時間點)' } }
+            user: { param1: { expect: 30, reserve: 60, name: '平日每日時長(分)', en_name: 'Weekday Daily Time (min)', unit: '分' }, param2: { expect: 60, reserve: 120, name: '假日每日時長(分)', en_name: 'Weekend Daily Time (min)', unit: '分' }, param3: { expect: 1, reserve: 3, name: '可玩遊戲類型(限制級)', en_name: 'Allowed Game Rating', unit: '' }, param4: { expect: 30, reserve: 0, name: '獎勵時間(分)', en_name: 'Bonus Time (min)', unit: '分' }, param5: { expect: 22, reserve: 21, name: '睡前禁用(時間點)', en_name: 'Bedtime Cutoff (Time)', unit: '' } },
+            ai: { param1: { expect: 90, reserve: 45 }, param2: { expect: 180, reserve: 90 }, param3: { expect: 3, reserve: 1 }, param4: { expect: 60, reserve: 15 }, param5: { expect: 20, reserve: 21.5 } }
         },
-        batna: { text: '單方面沒收所有設備一週。<p class="en-text">Unilaterally confiscate all devices for one week.</p>', values: { cost: 0, duration: 0, warranty: 1, prepayment: 0, obligation: 24 } },
-        sliderConfig: { cost: { min: 20, max: 100, step: 5 }, duration: { min: 50, max: 200, step: 10 }, warranty: { min: 1, max: 3, step: 1 }, prepayment: { min: 0, max: 60, step: 5 }, obligation: { min: 20, max: 23, step: 0.5 } },
+        batna: { text: '單方面沒收所有設備一週。<p class="en-text">Unilaterally confiscate all devices for one week.</p>', values: { param1: 0, param2: 0, param3: 1, param4: 0, param5: 24 } },
+        sliderConfig: { param1: { min: 20, max: 100, step: 5 }, param2: { min: 50, max: 200, step: 10 }, param3: { min: 1, max: 3, step: 1 }, param4: { min: 0, max: 60, step: 5 }, param5: { min: 20, max: 23, step: 0.5 } },
         discussionQuestions: [
             { zh: '感受談判的「力量」：回想五輪談判，在哪個瞬間你感覺自己最具主導權？是哪個因素（例如，對方的讓步、你手上的好牌、或是你的 BATNA）給了你這種感覺？', en: 'Feeling the "Power" in Negotiation: Looking back at the five rounds, at what moment did you feel most in control? What factor (e.g., the opponent\'s concession, a strong position on an issue, or your BATNA) gave you that feeling?'},
             { zh: '面對「卡關」的時刻：當你感覺談判陷入僵局，AI 不斷拒絕你的方案時，你腦中最先出現的想法是什麼？你最終是如何打破僵局的，或者，是什麼讓你決定放棄？', en: 'Facing a Deadlock: When you felt the negotiation was deadlocked and the AI kept rejecting your offers, what was the first thought that came to your mind? How did you eventually break the impasse, or what made you decide to walk away?'},
@@ -69,7 +73,7 @@ const AI_STYLES = {
     tough:       { name: '強悍型',       en_name: 'Tough',         desc: '業主尋求完美匹配。成交條件：所有 5 個談判項必須全部落在雙方的成交區間 (ZOPA) 內。', en_desc: 'The client seeks a perfect match. Deal Condition: All 5 negotiation items must fall within the ZOPA.' },
     horseTrader: { name: '交換型',       en_name: 'Horse-Trader',  desc: '業主注重多數共識。成交條件：至少有 4 個談判項落在雙方的成交區間 (ZOPA) 內。', en_desc: 'The client focuses on majority consensus. Deal Condition: At least 4 negotiation items must fall within the ZOPA.' },
     fair:        { name: '公平型',       en_name: 'Fair',          desc: '業主尋求整體平衡。成交條件：至少有 3 個談判項落在雙方的成交區間 (ZOPA) 內。', en_desc: 'The client seeks an overall balance. Deal Condition: At least 3 negotiation items must fall within the ZOPA.' },
-    key:         { name: '關鍵變量型',   en_name: 'Key-Variable',  desc: '業主對核心利益寸步不讓。成交條件：至少有 3 個談判項落在 ZOPA 內，且其中必須包含「總造價」和「工期」。', en_desc: 'The client is uncompromising on core interests. Deal Condition: At least 3 items in ZOPA, which must include Total Cost and Duration.' },
+    key:         { name: '關鍵變量型',   en_name: 'Key-Variable',  desc: '業主對核心利益寸步不讓。成交條件：至少有 3 個談判項落在 ZOPA 內，且其中必須包含兩個關鍵變數。', en_desc: 'The client is uncompromising on core interests. Deal Condition: At least 3 items in ZOPA, which must include the two key variables.' },
     accommodating: { name: '隨和型',     en_name: 'Accommodating', desc: '業主態度開放，容易達成。成交條件：至少有 2 個談判項落在雙方的成交區間 (ZOPA) 內。', en_desc: 'The client is open and easy to deal with. Deal Condition: At least 2 negotiation items must fall within the ZOPA.' }
 };
 
@@ -86,7 +90,7 @@ function generateDynamicParams(styleKey, baseAiParams) {
         const originalRange = Math.abs(param.reserve - param.expect);
         const newRange = originalRange * factor;
         if (param.reserve > param.expect) {
-            param.reserve = Math.round((param.expect + newRange) / (key === 'cost' ? 10000 : 1)) * (key === 'cost' ? 10000 : 1);
+             param.reserve = Math.round((param.expect + newRange) / (key === 'param1' || key === 'param4' ? 100 : 1)) * (key === 'param1' || key === 'param4' ? 100 : 1);
         } else {
             param.reserve = Math.round(param.expect - newRange);
         }
@@ -102,12 +106,12 @@ function isWithinZOPA(key, value, userParam, aiReserve) {
     }
 }
 
-function checkDealCondition(offer, aiStyleKey, aiParams, userParams, identity) {
+function checkDealCondition(offer, aiStyleKey, aiParams, userParams) {
     const zopaStatus = {};
     for (const key in offer) { zopaStatus[key] = isWithinZOPA(key, offer[key], userParams[key], aiParams[key].reserve); }
     const zopaCount = Object.values(zopaStatus).filter(Boolean).length;
     
-    let keyItems = ['cost', 'duration']; // Default for professional, student, general
+    const keyItems = ['param1', 'param2']; 
     
     switch (aiStyleKey) {
         case 'tough': return zopaCount >= 5;
@@ -120,8 +124,8 @@ function checkDealCondition(offer, aiStyleKey, aiParams, userParams, identity) {
 }
 
 function generateAiResponse(offer, gameState) {
-    const { aiParams, isPractice } = gameState.currentRound;
-    const userParams = isPractice ? SCENARIOS.practice.params.user : SCENARIOS[gameState.identity].params.user;
+    const { aiParams } = gameState.currentRound;
+    const userParams = SCENARIOS[gameState.identity || 'practice'].params.user;
     const painPoints = [];
     
     for (const key in offer) {
@@ -189,11 +193,12 @@ function calculateSatisfactionScores(finalOffer, scene) {
         const batnaValue = batna[key];
         let overConceded = false;
         
-        // Check if user's offer is better for AI than AI's expectation, AND worse for user than user's BATNA
-        if (aiBaseParams[key].reserve > aiExpect) { // Higher is worse for AI -> Lower is better
-            if(userValue < aiExpect && userValue < batnaValue) overConceded = true;
-        } else { // Lower is worse for AI -> Higher is better
-            if(userValue > aiExpect && userValue > batnaValue) overConceded = true;
+        const isUserHigherBetter = userParams[key].expect > userParams[key].reserve;
+
+        if (isUserHigherBetter) { // User wants higher (e.g., salary, cost)
+            if (userValue < batnaValue && userValue < aiExpect) overConceded = true;
+        } else { // User wants lower (e.g., duration, warranty)
+            if (userValue > batnaValue && userValue > aiExpect) overConceded = true;
         }
 
         if(overConceded){
@@ -244,7 +249,7 @@ function generateReportData(gameState, finalOffer, isSuccess) {
         discussionQuestions = SCENARIOS[gameState.identity].discussionQuestions;
     }
 
-    let smartTipsHTML = `<p><strong>分析 (Analysis):</strong> 您的方案${isSuccess ? '' : '未'}能滿足業主 ${aiStyle.name} (${aiStyle.en_name}) 風格的成交條件。<br>${aiStyle.desc}<br><span class="en-text">${aiStyle.en_desc}</span></p>`;
+    let smartTipsHTML = `<p><strong>分析 (Analysis):</strong> 您的方案${isSuccess ? '' : '未'}能滿足對手 ${aiStyle.name} (${aiStyle.en_name}) 風格的成交條件。<br>${aiStyle.desc}<br><span class="en-text">${aiStyle.en_desc}</span></p>`;
     if (isSuccess && satisfaction.penaltyReasons.length > 0) {
         smartTipsHTML += `<div class="mt-2 pt-2 border-t border-sky-300">
             <p class="font-bold text-amber-700">警示：您的滿意度被調降，因為您可能做出了 ${satisfaction.penaltyReasons.length} 次過度讓步：</p>
@@ -257,7 +262,7 @@ function generateReportData(gameState, finalOffer, isSuccess) {
 
     return {
         isSuccess, isGameOver, isPracticeRoundOver: isPractice, gameHistory: updatedGameHistory, finalScore, discussionQuestions,
-        resultText: isSuccess ? '恭喜！您與業主達成了雙方都能接受的協議。<p class="en-text">Congratulations! You have reached a mutually acceptable agreement with the client.</p>' : '很遺憾，雙方未能達成共識，談判破裂。<p class="en-text">Unfortunately, a consensus was not reached, and the negotiation has failed.</p>',
+        resultText: isSuccess ? `${scene.successMessage.zh}<p class="en-text">${scene.successMessage.en}</p>` : '很遺憾，雙方未能達成共識，談判破裂。<p class="en-text">Unfortunately, a consensus was not reached, and the negotiation has failed.</p>',
         aiStyleName: `${aiStyle.name}<p class="en-text">${aiStyle.en_name}</p>`,
         reportTableHTML: Object.keys(userParams).map(key => {
             const param = userParams[key];
@@ -275,7 +280,7 @@ function generateReportData(gameState, finalOffer, isSuccess) {
             return `<div><span class="font-medium">${userParams[key].name} (${userParams[key].en_name}):</span><span class="ml-2 text-sm font-semibold text-white px-2 py-1 rounded-full ${inZopa ? 'bg-green-500' : 'bg-red-500'}">${inZopa ? '在成交區間內 (In ZOPA)' : '未落在成交區間 (Outside ZOPA)'}</span></div>`;
         }).join(''),
         behaviorStatsHTML: `<li>對話輪次 (Rounds): <strong>${currentRound.stats.offers}</strong> 次</li><li>查看 BATNA (BATNA Views): <strong>${currentRound.stats.batnaViews}</strong> 次</li>`,
-        satisfactionScoresHTML: `<div class="flex justify-between"><span>您的滿意度 (Your Score):</span><span class="font-bold text-lg">${satisfaction.user} / 10</span></div><div class="flex justify-between"><span>業主滿意度 (Client's Score):</span><span class="font-bold text-lg">${satisfaction.ai} / 10</span></div>`,
+        satisfactionScoresHTML: `<div class="flex justify-between"><span>您的滿意度 (Your Score):</span><span class="font-bold text-lg">${satisfaction.user} / 10</span></div><div class="flex justify-between"><span>對手滿意度 (Opponent's Score):</span><span class="font-bold text-lg">${satisfaction.ai} / 10</span></div>`,
         smartTipsHTML
     };
 }
@@ -330,16 +335,17 @@ const handleAction = {
                 stats: { offers: 0, batnaViews: 0, irrationalMoves: 0 },
                 lastPainPoint: null, consecutivePainPointCount: 0,
             };
-            leakText = '情報顯示 (Intel shows): 業主方 (the Client)...';
-             const leakableParams = ['duration', 'warranty', 'prepayment', 'obligation'];
+            leakText = '情報顯示 (Intel shows): 對手 (the Opponent)...';
+             const leakableParams = Object.keys(scene.params.ai);
             const shuffledLeaks = leakableParams.sort(() => 0.5 - Math.random());
             const leaksToReveal = shuffledLeaks.slice(0, 1 + Math.floor(Math.random() * 2));
             leaksToReveal.forEach((paramKey, index) => {
                 const param = currentRound.aiParams[paramKey];
+                const userParam = scene.params.user[paramKey];
                 const type = Math.random() < 0.5 ? '期望' : '底線';
                 const en_type = type === '期望' ? 'expectation' : 'reserve point';
                 const value = type === '期望' ? param.expect : param.reserve;
-                leakText += `<br>${index > 0 ? '同時' : '對'} <strong>${param.name} (${param.en_name})</strong> 的${type}是 <strong>${value}${param.unit || ''}</strong>. <span class="en-text">(...and their ${en_type} for <strong>${param.en_name}</strong> is <strong>${value}${param.en_unit || ''}</strong>)</span>`;
+                leakText += `<br>${index > 0 ? '同時' : '對'} <strong>${userParam.name} (${userParam.en_name})</strong> 的${type}是 <strong>${value}${userParam.unit || ''}</strong>. <span class="en-text">(...and their ${en_type} for <strong>${userParam.en_name}</strong> is <strong>${value}${userParam.en_unit || ''}</strong>)</span>`;
             });
         }
         
@@ -358,8 +364,8 @@ const handleAction = {
         const { offer } = payload;
         if (!offer) throw new Error("缺少 offer 数据 (Missing offer data)");
         gameState.currentRound.stats.offers++;
-        const userParams = gameState.currentRound.isPractice ? SCENARIOS.practice.params.user : SCENARIOS[gameState.identity].params.user;
-        const isDeal = checkDealCondition(offer, gameState.currentRound.aiStyle.key, gameState.currentRound.aiParams, userParams, gameState.identity);
+        const scene = gameState.currentRound.isPractice ? SCENARIOS.practice : SCENARIOS[gameState.identity];
+        const isDeal = checkDealCondition(offer, gameState.currentRound.aiStyle.key, gameState.currentRound.aiParams, scene.params.user, gameState.identity);
         
         if (isDeal) {
             const reportData = generateReportData(gameState, offer, true);
