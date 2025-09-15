@@ -6,6 +6,8 @@ const OBLIGATION_LEVELS = {
     4: { name: '重度義務', en_name: 'Heavy' }, 
     5: { name: '全面義務', en_name: 'Comprehensive' } 
 };
+
+// Main Game Parameters
 const BASE_PARAMS = {
     user: {
         cost:       { expect: 10500000, reserve: 9000000, name: '總造價',       en_name: 'Total Cost',       unit: '元', en_unit: '' },
@@ -22,6 +24,28 @@ const BASE_PARAMS = {
         obligation: { expect: 5,        reserve: 3,        name: '附加義務等級', en_name: 'Obligation Level', unit: '',   en_unit: '' }
     }
 };
+const USER_BATNA = { cost: 9500000, duration: 300, warranty: 2, prepayment: 15, obligation: 2 };
+
+// Practice Round Parameters
+const PRACTICE_PARAMS = {
+    user: {
+        cost:       { expect: 1500000, reserve: 1200000, name: '總造價',       en_name: 'Total Cost',       unit: '元', en_unit: '' },
+        duration:   { expect: 60,      reserve: 45,     name: '工期',         en_name: 'Duration',         unit: '天', en_unit: ' Days' },
+        warranty:   { expect: 1,       reserve: 2,       name: '保修期',       en_name: 'Warranty',         unit: '年', en_unit: ' Years' },
+        prepayment: { expect: 30,      reserve: 20,      name: '預付款',       en_name: 'Prepayment',       unit: '%',  en_unit: '%' },
+        obligation: { expect: 1,       reserve: 2,       name: '附加義務等級', en_name: 'Obligation Level', unit: '',   en_unit: '' }
+    },
+    ai: {
+        cost:       { expect: 1100000, reserve: 1400000, name: '總造價',       en_name: 'Total Cost',       unit: '元', en_unit: '' },
+        duration:   { expect: 40,      reserve: 55,      name: '工期',         en_name: 'Duration',         unit: '天', en_unit: ' Days' },
+        warranty:   { expect: 3,       reserve: 1,       name: '保修期',       en_name: 'Warranty',         unit: '年', en_unit: ' Years' },
+        prepayment: { expect: 10,      reserve: 25,      name: '預付款',       en_name: 'Prepayment',       unit: '%',  en_unit: '%' },
+        obligation: { expect: 3,       reserve: 1,       name: '附加義務等級', en_name: 'Obligation Level', unit: '',   en_unit: '' }
+    }
+};
+const PRACTICE_USER_BATNA = { cost: 1350000, duration: 50, warranty: 1, prepayment: 20, obligation: 1 };
+
+
 const AI_STYLES = {
     tough:       { name: '強悍型',       en_name: 'Tough',         desc: '業主尋求完美匹配。成交條件：所有 5 個談判項必須全部落在雙方的成交區間 (ZOPA) 內。', en_desc: 'The client seeks a perfect match. Deal Condition: All 5 negotiation items must fall within the ZOPA.' },
     horseTrader: { name: '交換型',       en_name: 'Horse-Trader',  desc: '業主注重多數共識。成交條件：至少有 4 個談判項落在雙方的成交區間 (ZOPA) 內。', en_desc: 'The client focuses on majority consensus. Deal Condition: At least 4 negotiation items must fall within the ZOPA.' },
@@ -29,15 +53,14 @@ const AI_STYLES = {
     key:         { name: '關鍵變量型',   en_name: 'Key-Variable',  desc: '業主對核心利益寸步不讓。成交條件：至少有 3 個談判項落在 ZOPA 內，且其中必須包含「總造價」和「工期」。', en_desc: 'The client is uncompromising on core interests. Deal Condition: At least 3 items in ZOPA, which must include Total Cost and Duration.' },
     accommodating: { name: '隨和型',     en_name: 'Accommodating', desc: '業主態度開放，容易達成。成交條件：至少有 2 個談判項落在雙方的成交區間 (ZOPA) 內。', en_desc: 'The client is open and easy to deal with. Deal Condition: At least 2 negotiation items must fall within the ZOPA.' }
 };
-const USER_BATNA = { cost: 9500000, duration: 300, warranty: 2, prepayment: 15, obligation: 2 };
 
 // --- 辅助函数 (Helper Functions) ---
 function encodeState(state) { try { return btoa(unescape(encodeURIComponent(JSON.stringify(state)))); } catch (e) { console.error('Encoding failed:', e); return ''; } }
 function decodeState(token) { try { return JSON.parse(decodeURIComponent(escape(atob(token)))); } catch (e) { console.error('Decoding failed:', e); return null; } }
 
-function generateDynamicParams(styleKey) {
+function generateDynamicParams(styleKey, baseAiParams) {
     const flexibilityFactors = { tough: 0.4, horseTrader: 0.6, fair: 0.8, key: 0.7, accommodating: 1.0 };
-    const newAiParams = JSON.parse(JSON.stringify(BASE_PARAMS.ai));
+    const newAiParams = JSON.parse(JSON.stringify(baseAiParams));
     const factor = flexibilityFactors[styleKey] || 0.8;
     for (const key in newAiParams) {
         const param = newAiParams[key];
@@ -57,9 +80,10 @@ function isWithinZOPA(key, value, userReserve, aiReserve) {
     else { return value <= userReserve && value >= aiReserve; }
 }
 
-function checkDealCondition(offer, aiStyleKey, aiParams) {
+function checkDealCondition(offer, aiStyleKey, aiParams, isPractice) {
+    const userParams = isPractice ? PRACTICE_PARAMS.user : BASE_PARAMS.user;
     const zopaStatus = {};
-    for (const key in offer) { zopaStatus[key] = isWithinZOPA(key, offer[key], BASE_PARAMS.user[key].reserve, aiParams[key].reserve); }
+    for (const key in offer) { zopaStatus[key] = isWithinZOPA(key, offer[key], userParams[key].reserve, aiParams[key].reserve); }
     const zopaCount = Object.values(zopaStatus).filter(Boolean).length;
     switch (aiStyleKey) {
         case 'tough': return zopaCount >= 5;
@@ -72,22 +96,20 @@ function checkDealCondition(offer, aiStyleKey, aiParams) {
 }
 
 function generateAiResponse(offer, gameState) {
-    const { aiParams } = gameState.currentRound;
+    const { aiParams, isPractice } = gameState.currentRound;
+    const userParams = isPractice ? PRACTICE_PARAMS.user : BASE_PARAMS.user;
+
     const painPoints = [];
-    // A pain point for the AI is when the user's offer is WORSE for the AI than its reserve value.
     for (const key in offer) {
         const userValue = offer[key];
         const aiReserve = aiParams[key].reserve;
         let isPainful = false;
         
-        // Higher is worse for AI
         if (key === 'cost' || key === 'duration') {
              if (userValue > aiReserve) isPainful = true;
-        // Lower is worse for AI
-        } else { // warranty, prepayment, obligation
+        } else {
              if (userValue < aiReserve) isPainful = true;
         }
-
         if(isPainful) {
             painPoints.push({ key, userValue });
         }
@@ -149,7 +171,6 @@ function calculateSatisfactionScores(finalOffer, aiParams, isPractice) {
     let userSatisfaction = Math.max(0, 10 * (1 - Math.sqrt(userSqDiff) / maxDist));
     const aiSatisfaction = Math.max(0, 10 * (1 - Math.sqrt(aiSqDiff) / maxDist)).toFixed(1);
 
-    // --- Penalty Logic for Over-concession ---
     let penaltyFactor = 1.0;
     const penaltyReasons = [];
     if (finalOffer.cost < aiParams.cost.expect && finalOffer.cost < batna.cost) { penaltyFactor -= 0.15; penaltyReasons.push('總造價遠低於市場行情 (Cost was well below market rate)'); }
@@ -248,63 +269,68 @@ const handleAction = {
     'init': (payload) => {
         let state = payload.token ? decodeState(payload.token) : { gameHistory: [], completedStyles: [] };
         
-        if (state.completedStyles.length >= Object.keys(AI_STYLES).length) {
-            const finalScore = calculateFinalScore(state.gameHistory);
-            return { isGameOver: true, gameHistory: state.gameHistory, finalScore };
-        }
-        
-        const isPractice = !state.gameHistory || state.gameHistory.length === 0 || (payload.token === null && state.completedStyles.length === 0);
-
-        let currentRound;
-        let scene;
-        let sliderConfig;
-
-        if (isPractice) {
-            currentRound = {
+        if (!state.isPracticeComplete) {
+            // Logic for Practice Round
+            const currentRound = {
                 isPractice: true,
                 aiStyle: { key: 'fair', ...AI_STYLES['fair'] },
                 aiParams: generateDynamicParams('fair', PRACTICE_PARAMS.ai),
                 stats: { offers: 0, batnaViews: 0, irrationalMoves: 0 },
                 lastPainPoint: null, consecutivePainPointCount: 0,
             };
-            scene = {
+            const scene = {
                 title: '練習輪：辦公室裝修', en_title: 'Practice Round: Office Renovation',
                 desc: '您將為一間新創公司的辦公室進行裝修工程。', en_desc: 'You will be renovating the office for a startup company.',
                 userParams: PRACTICE_PARAMS.user,
                 userBatna: '接受另一個報價 1,300,000 元，工期 50 天的案子。<p class="en-text">Accept another project with a price of 1,300,000 and a 50-day duration.</p>'
             };
-            sliderConfig = {
+            const sliderConfig = {
                 cost: { min: 1000000, max: 1600000, step: 10000 },
                 duration: { min: 30, max: 70, step: 1 },
                 warranty: { min: 1, max: 3, step: 1 },
                 prepayment: { min: 10, max: 40, step: 1 },
                 obligation: { min: 1, max: 3, step: 1 }
             };
-             state = { gameHistory: [], completedStyles: [] }; // Reset for official rounds
-        } else {
-            const availableStyles = Object.keys(AI_STYLES).filter(k => !state.completedStyles.includes(k));
-            const randomStyleKey = availableStyles[Math.floor(Math.random() * availableStyles.length)];
-            currentRound = {
-                isPractice: false,
-                aiStyle: { key: randomStyleKey, ...AI_STYLES[randomStyleKey] },
-                aiParams: generateDynamicParams(randomStyleKey, BASE_PARAMS.ai),
-                stats: { offers: 0, batnaViews: 0, irrationalMoves: 0 },
-                lastPainPoint: null, consecutivePainPointCount: 0,
-            };
-            scene = {
-                title: '正式挑戰：商業綜合體總承包', en_title: 'Official Challenge: General Contractor for a Commercial Complex',
-                desc: '您將為一個新的商業綜合體建設項目進行總承包談判。', en_desc: 'You will negotiate the general contract for a new commercial complex project.',
-                userParams: BASE_PARAMS.user,
-                userBatna: '接受另一個住宅項目合約。<p class="en-text">Accept another residential project contract.</p>'
-            };
-            sliderConfig = {
-                cost: { min: 8500000, max: 11000000, step: 50000 },
-                duration: { min: 200, max: 350, step: 5 },
-                warranty: { min: 1, max: 5, step: 1 },
-                prepayment: { min: 10, max: 30, step: 1 },
-                obligation: { min: 1, max: 5, step: 1 }
+            state.currentRound = currentRound;
+            return {
+                isGameOver: false, isPractice: true, roundNum: state.gameHistory.length + 1,
+                scene, sliderConfig,
+                aiStyleName: currentRound.aiStyle.name, aiStyleEnName: currentRound.aiStyle.en_name,
+                leakedInfoHTML: '本次為練習輪，部分資訊已揭露以利您熟悉操作。<p class="en-text">This is a practice round. Some information is revealed to help you get familiar with the controls.</p>',
+                initialOffer: Object.fromEntries(Object.keys(scene.userParams).map(key => [key, scene.userParams[key].expect])),
+                token: encodeState(state)
             };
         }
+
+        // Logic for Official Rounds
+        if (state.completedStyles.length >= Object.keys(AI_STYLES).length) {
+            const finalScore = calculateFinalScore(state.gameHistory);
+            return { isGameOver: true, gameHistory: state.gameHistory, finalScore };
+        }
+        
+        const availableStyles = Object.keys(AI_STYLES).filter(k => !state.completedStyles.includes(k));
+        const randomStyleKey = availableStyles[Math.floor(Math.random() * availableStyles.length)];
+        
+        const currentRound = {
+            isPractice: false,
+            aiStyle: { key: randomStyleKey, ...AI_STYLES[randomStyleKey] },
+            aiParams: generateDynamicParams(randomStyleKey, BASE_PARAMS.ai),
+            stats: { offers: 0, batnaViews: 0, irrationalMoves: 0 },
+            lastPainPoint: null, consecutivePainPointCount: 0,
+        };
+        const scene = {
+            title: '正式挑戰：商業綜合體總承包', en_title: 'Official Challenge: General Contractor for a Commercial Complex',
+            desc: '您將為一個新的商業綜合體建設項目進行總承包談判。', en_desc: 'You will negotiate the general contract for a new commercial complex project.',
+            userParams: BASE_PARAMS.user,
+            userBatna: '接受另一個住宅項目合約。<p class="en-text">Accept another residential project contract.</p>'
+        };
+        const sliderConfig = {
+            cost: { min: 8500000, max: 11000000, step: 50000 },
+            duration: { min: 200, max: 350, step: 5 },
+            warranty: { min: 1, max: 5, step: 1 },
+            prepayment: { min: 10, max: 30, step: 1 },
+            obligation: { min: 1, max: 5, step: 1 }
+        };
 
         state.currentRound = currentRound;
         
@@ -321,7 +347,7 @@ const handleAction = {
         });
         
         return {
-            isGameOver: false, isPractice, roundNum: state.gameHistory.length + 1,
+            isGameOver: false, isPractice: false, roundNum: state.gameHistory.length + 1,
             scene, sliderConfig,
             aiStyleName: currentRound.aiStyle.name, aiStyleEnName: currentRound.aiStyle.en_name,
             leakedInfoHTML: leakText,
@@ -337,7 +363,9 @@ const handleAction = {
         
         if (isDeal) {
             const reportData = generateReportData(gameState, offer, true);
-            if (!gameState.currentRound.isPractice) {
+            if (gameState.currentRound.isPractice) {
+                gameState.isPracticeComplete = true;
+            } else {
                 gameState.completedStyles.push(gameState.currentRound.aiStyle.key);
                 gameState.gameHistory = reportData.gameHistory;
             }
@@ -350,7 +378,9 @@ const handleAction = {
         const userParams = gameState.currentRound.isPractice ? PRACTICE_PARAMS.user : BASE_PARAMS.user;
         const finalOffer = payload.offer || Object.fromEntries(Object.keys(userParams).map(key => [key, userParams[key].expect]));
         const reportData = generateReportData(gameState, finalOffer, false);
-        if (!gameState.currentRound.isPractice) {
+        if (gameState.currentRound.isPractice) {
+            gameState.isPracticeComplete = true;
+        } else {
             gameState.completedStyles.push(gameState.currentRound.aiStyle.key);
             gameState.gameHistory = reportData.gameHistory;
         }
