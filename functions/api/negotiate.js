@@ -130,7 +130,7 @@ function calculateSatisfactionScores(finalOffer, aiParams) {
     let userSatisfaction = Math.max(0, 10 * (1 - Math.sqrt(userSqDiff) / maxDist));
     const aiSatisfaction = Math.max(0, 10 * (1 - Math.sqrt(aiSqDiff) / maxDist)).toFixed(1);
 
-    // --- Penalty Logic ---
+    // --- Penalty Logic for Over-concession ---
     let penaltyFactor = 1.0;
     const penaltyReasons = [];
     if (finalOffer.cost < aiParams.cost.expect && finalOffer.cost < USER_BATNA.cost) { penaltyFactor -= 0.15; penaltyReasons.push('總造價遠低於市場行情 (Cost was well below market rate)'); }
@@ -172,8 +172,8 @@ function generateReportData(gameState, finalOffer, isSuccess) {
     let smartTipsHTML = `<p><strong>分析 (Analysis):</strong> 您的方案${isSuccess ? '' : '未'}能滿足業主 ${aiStyle.name} (${aiStyle.en_name}) 風格的成交條件。<br>${aiStyle.desc}<br><span class="en-text">${aiStyle.en_desc}</span></p>`;
     if (isSuccess && satisfaction.penaltyReasons.length > 0) {
         smartTipsHTML += `<div class="mt-2 pt-2 border-t border-sky-300">
-            <p class="font-bold text-amber-700">警示：您的滿意度被調降，因為您可能做出了過多讓步：</p>
-            <p class="en-text text-amber-600">Warning: Your satisfaction score was penalized for potentially excessive concessions:</p>
+            <p class="font-bold text-amber-700">警示：您的滿意度被調降，因為您可能做出了 ${satisfaction.penaltyReasons.length} 次過度讓步：</p>
+            <p class="en-text text-amber-600">Warning: Your satisfaction score was penalized for ${satisfaction.penaltyReasons.length} potentially excessive concessions:</p>
             <ul class="list-disc list-inside text-amber-700 mt-1">
                 ${satisfaction.penaltyReasons.map(reason => `<li>${reason}</li>`).join('')}
             </ul>
