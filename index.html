@@ -73,7 +73,7 @@
                         <ul class="list-disc list-inside space-y-1 mt-1 text-slate-600">
                             <li><b>五輪挑戰 (Five Rounds Challenge):</b> 您將面對五位風格各異的對手，請盡力在每一輪中達成最佳協議。</li>
                             <li><b>時間壓力 (Time Pressure):</b> 每輪談判限時 **5 分鐘**，超時將導致談判破裂。</li>
-                            <li><b>深思熟慮 (Think Carefully):</b> 兩次提交方案之間需間隔 **30 秒**。過於倉促的決策將被記錄為「非理性思考」。</li>
+                            <li><b>深思熟慮 (Think Carefully):</b> 兩次提交方案之間需間隔 **15 秒**。過於倉促的決策將被記錄為「非理性思考」。</li>
                             <li><b>避免過度讓步 (Avoid Over-concession):</b> 做出遠超對手期望的讓步會被記錄，並影響您的滿意度評分。</li>
                         </ul>
                     </div>
@@ -208,10 +208,17 @@
                     </table>
                 </div>
             </div>
-            <div id="discussion-container" class="bg-white p-6 rounded-lg shadow-md">
-                <h2 class="text-2xl font-bold text-slate-800 mb-1">情境反思與討論</h2>
-                <p class="en-text -mt-1 mb-4">Scenario Reflection & Discussion</p>
-                <div id="discussion-questions" class="space-y-4 text-slate-700"></div>
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <div class="text-center">
+                     <button id="toggle-discussion-btn" class="bg-gray-200 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-300 transition mb-4">
+                        顯示討論問題 <span class="text-gray-500 ml-1">Show Discussion Questions</span>
+                    </button>
+                </div>
+                <div id="discussion-container" class="hidden">
+                    <h2 class="text-2xl font-bold text-slate-800 mb-1">情境反思與討論</h2>
+                    <p class="en-text -mt-1 mb-4">Scenario Reflection & Discussion</p>
+                    <div id="discussion-questions" class="space-y-4 text-slate-700"></div>
+                </div>
             </div>
             <div class="text-center mt-6">
                 <button id="restart-series-btn" class="bg-sky-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-sky-700 transition-transform transform hover:scale-105">返回主選單 <span class="text-sky-200">Back to Main Menu</span></button>
@@ -232,7 +239,8 @@ document.addEventListener('DOMContentLoaded', () => {
         nextRound: document.getElementById('next-round-btn'), 
         viewSummary: document.getElementById('view-summary-btn'), 
         restartSeries: document.getElementById('restart-series-btn'), 
-        modalClose: document.getElementById('modal-close-btn') 
+        modalClose: document.getElementById('modal-close-btn'),
+        toggleDiscussion: document.getElementById('toggle-discussion-btn')
     };
     const displays = {
         sceneTitle: document.getElementById('scene-title'), sceneTitleEn: document.getElementById('scene-title-en'), sceneDescription: document.getElementById('scene-description'), sceneDescriptionEn: document.getElementById('scene-description-en'),
@@ -250,12 +258,14 @@ document.addEventListener('DOMContentLoaded', () => {
         finalSummaryTableHead: document.getElementById('final-summary-table-head'), finalSummaryTableBody: document.getElementById('final-summary-table-body'),
         timer: document.getElementById('timer'),
         finalScore: document.getElementById('final-score'), finalScoreLogic: document.getElementById('final-score-logic'),
+        discussionContainer: document.getElementById('discussion-container'),
         discussionQuestions: document.getElementById('discussion-questions')
     };
     
     let gameStateToken = null;
     let timerInterval = null;
     let lastSubmitTimestamp = 0;
+    const SUBMIT_COOLDOWN = 15000; // 15 seconds
     let currentInputs = {};
     let currentParamConfigs = {};
     let obligationDefs = {};
@@ -298,7 +308,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 descElement.innerHTML = `等級 ${value}: ${obligationDefs[value]}`;
             }
         } else {
-             displayValue = `${value.toLocaleString()}${paramConfig.unit || ''}`;
+             displayValue = `${parseFloat(value).toLocaleString()}${paramConfig.unit_en ? ` ${paramConfig.unit_en}` : (paramConfig.unit || '')}`;
         }
         
         const valueDisplay = document.getElementById(`${key}-value`);
@@ -416,10 +426,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function handleSubmitOffer() {
         const now = Date.now();
-        if (now - lastSubmitTimestamp < 30000) {
+        if (now - lastSubmitTimestamp < SUBMIT_COOLDOWN) {
             showModal(
                 '提交過於頻繁！', 'Submission Too Frequent!',
-                `<p>冷靜一下，思考是談判中最強大的武器！</p><p class="en-text">Calm down, thinking is the most powerful weapon in negotiation!</p><p class="mt-2 text-sm text-amber-700">（此行為已被記錄為一次「非理性思考」）<br><span class="en-text">(This action has been recorded as one "irrational move")</span></p>`
+                `<p>冷靜一下，思考是談判中最強大的武器！請等待 ${Math.ceil((SUBMIT_COOLDOWN - (now - lastSubmitTimestamp))/1000)} 秒。</p><p class="en-text">Calm down, thinking is the most powerful weapon in negotiation! Please wait ${Math.ceil((SUBMIT_COOLDOWN - (now - lastSubmitTimestamp))/1000)} seconds.</p><p class="mt-2 text-sm text-amber-700">（此行為已被記錄為一次「非理性思考」）<br><span class="en-text">(This action has been recorded as one "irrational move")</span></p>`
             );
             apiCall('irrationalMove', { token: gameStateToken }).then(data => { if (data && data.token) gameStateToken = data.token; });
             return;
@@ -518,6 +528,8 @@ document.addEventListener('DOMContentLoaded', () => {
             </tr>`;
         }).join('');
         displays.discussionQuestions.innerHTML = discussionQuestions;
+        displays.discussionContainer.classList.add('hidden');
+        buttons.toggleDiscussion.innerHTML = '顯示討論問題 <span class="text-gray-500 ml-1">Show Discussion Questions</span>';
         switchScreen('finalSummary');
     }
 
@@ -544,6 +556,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     buttons.modalClose.addEventListener('click', hideModal);
+    buttons.toggleDiscussion.addEventListener('click', () => {
+        const isHidden = displays.discussionContainer.classList.toggle('hidden');
+        if(isHidden) {
+            buttons.toggleDiscussion.innerHTML = '顯示討論問題 <span class="text-gray-500 ml-1">Show Discussion Questions</span>';
+        } else {
+            buttons.toggleDiscussion.innerHTML = '隱藏討論問題 <span class="text-gray-500 ml-1">Hide Discussion Questions</span>';
+        }
+    });
 });
 </script>
 
