@@ -78,7 +78,7 @@
                     <div>
                         <h3 class="text-lg font-bold text-sky-700">操作步驟 (How to Play)</h3>
                         <ol class="list-decimal list-inside space-y-1 mt-1 text-slate-600">
-                           <li><b>閱讀開局信息 (Read Initial Info):</b> 點擊下方按鈕，仔細閱讀您的目標及對手情報。</li>
+                           <li><b>閱讀開局信息 (Read Initial Info):</b> 點擊下方按鈕，仔細閱讀您的目標及對手情报。</li>
                            <li><b>開始談判 (Start Negotiating):</b> 點擊「開始談判」按鈕進入談判室。</li>
                            <li><b>調整與提交 (Adjust & Submit):</b> 使用滑桿調整方案，點擊「提交方案」。</li>
                            <li><b>複盤與總結 (Review & Summarize):</b> 每輪結束後查看報告，五輪後將提供總結。</li>
@@ -88,9 +88,30 @@
             </div>
             <div class="text-center">
                 <button id="accept-instructions-btn" class="bg-sky-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-sky-700 transition-transform transform hover:scale-105">
-                    我明白了，進入練習輪 <span class="text-sky-200 ml-1">I Understand, Start Practice Round</span>
+                    我明白了，選擇身份 <span class="text-sky-200 ml-1">I Understand, Select Role</span>
                 </button>
             </div>
+        </div>
+        
+        <div id="identity-screen" class="screen space-y-6">
+             <div class="bg-white p-6 rounded-lg shadow-md text-center">
+                 <h2 class="text-2xl font-bold mb-1">請選擇您的身份</h2>
+                 <p class="en-text -mt-1 mb-4">Please Select Your Role</p>
+                 <div class="grid md:grid-cols-3 gap-4">
+                     <button data-identity="student" class="identity-choice-btn bg-white p-6 rounded-lg shadow-md hover:shadow-xl hover:ring-2 hover:ring-sky-500 transition">
+                         <h3 class="text-lg font-bold text-sky-700">高校就讀學生</h3>
+                         <p class="en-text">University Student</p>
+                     </button>
+                     <button data-identity="professional" class="identity-choice-btn bg-white p-6 rounded-lg shadow-md hover:shadow-xl hover:ring-2 hover:ring-sky-500 transition">
+                         <h3 class="text-lg font-bold text-sky-700">在職工作人士</h3>
+                         <p class="en-text">Working Professional</p>
+                     </button>
+                     <button data-identity="general" class="identity-choice-btn bg-white p-6 rounded-lg shadow-md hover:shadow-xl hover:ring-2 hover:ring-sky-500 transition">
+                         <h3 class="text-lg font-bold text-sky-700">跨領域/通識學員</h3>
+                         <p class="en-text">General Audience</p>
+                     </button>
+                 </div>
+             </div>
         </div>
 
         <div id="scene-screen" class="screen space-y-6">
@@ -144,7 +165,7 @@
                     <div id="timer" class="text-2xl font-bold text-red-600">05:00</div>
                 </div>
             </div>
-            <div id="negotiation-form" class="space-y-6"><div><label for="cost" class="flex justify-between font-medium"><span>總造價 (Total Cost)</span><span id="cost-value" class="font-bold text-sky-600"></span></label><input type="range" id="cost" min="8500000" max="11000000" step="50000" value="10500000"></div><div><label for="duration" class="flex justify-between font-medium"><span>工期 (Duration)</span><span id="duration-value" class="font-bold text-sky-600"></span></label><input type="range" id="duration" min="200" max="350" step="5" value="330"></div><div><label for="warranty" class="flex justify-between font-medium"><span>保修期 (Warranty)</span><span id="warranty-value" class="font-bold text-sky-600"></span></label><input type="range" id="warranty" min="1" max="5" step="1" value="1"></div><div><label for="prepayment" class="flex justify-between font-medium"><span>預付款 (Prepayment)</span><span id="prepayment-value" class="font-bold text-sky-600"></span></label><input type="range" id="prepayment" min="10" max="30" step="1" value="25"></div><div><label for="obligation" class="flex justify-between font-medium"><span>附加義務等級 (Obligation Level)</span><span id="obligation-value" class="font-bold text-sky-600"></span></label><input type="range" id="obligation" min="1" max="5" step="1" value="1"><div id="obligation-description-game" class="mt-2 text-sm bg-slate-100 p-3 rounded-md text-slate-700"></div></div></div><div class="mt-8 flex flex-wrap gap-4 items-center"><button id="submit-offer-btn" class="bg-sky-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-sky-700 transition disabled:bg-slate-400 flex items-center justify-center gap-2">提交方案 <span class="text-sky-200">Submit</span></button><button id="end-negotiation-btn" class="bg-red-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-600 transition">放棄談判 <span class="text-red-200">End</span></button></div></div><div class="space-y-6"><div class="bg-white p-4 rounded-lg shadow-md">
+            <div id="negotiation-form" class="space-y-6"><div><label for="cost" class="flex justify-between font-medium"><span></span><span id="cost-value" class="font-bold text-sky-600"></span></label><input type="range" id="cost"></div><div><label for="duration" class="flex justify-between font-medium"><span></span><span id="duration-value" class="font-bold text-sky-600"></span></label><input type="range" id="duration"></div><div><label for="warranty" class="flex justify-between font-medium"><span></span><span id="warranty-value" class="font-bold text-sky-600"></span></label><input type="range" id="warranty"></div><div><label for="prepayment" class="flex justify-between font-medium"><span></span><span id="prepayment-value" class="font-bold text-sky-600"></span></label><input type="range" id="prepayment"></div><div><label for="obligation" class="flex justify-between font-medium"><span></span><span id="obligation-value" class="font-bold text-sky-600"></span></label><input type="range" id="obligation"><div id="obligation-description-game" class="mt-2 text-sm bg-slate-100 p-3 rounded-md text-slate-700"></div></div></div><div class="mt-8 flex flex-wrap gap-4 items-center"><button id="submit-offer-btn" class="bg-sky-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-sky-700 transition disabled:bg-slate-400 flex items-center justify-center gap-2">提交方案 <span class="text-sky-200">Submit</span></button><button id="end-negotiation-btn" class="bg-red-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-600 transition">放棄談判 <span class="text-red-200">End</span></button></div></div><div class="space-y-6"><div class="bg-white p-4 rounded-lg shadow-md">
             <h3 class="text-lg font-bold mb-1">業主 (AI) 回應</h3>
             <p class="en-text -mt-1 mb-3">Client (AI) Response</p>
             <div id="ai-response" class="min-h-[100px] bg-slate-100 p-3 rounded-md text-slate-700 italic">
@@ -217,15 +238,31 @@
                 </div>
             </div>
             <div class="text-center mt-6">
-                <button id="restart-series-btn" class="bg-sky-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-sky-700 transition-transform transform hover:scale-105">重新開始新系列 <span class="text-sky-200">Restart Series</span></button>
+                 <button id="go-to-discussion-btn" class="bg-purple-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-purple-700 transition-transform transform hover:scale-105">
+                    前往課後討論 <span class="text-purple-200">Go to Discussion</span>
+                </button>
+            </div>
+        </div>
+        
+        <div id="discussion-screen" class="screen space-y-6">
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-2xl font-bold mb-1">課後討論與反思</h2>
+                <p class="en-text -mt-1 mb-4">Post-Game Discussion & Reflection</p>
+                <p class="text-slate-600">請根據您剛剛的遊戲體驗，思考並與您的同伴討論以下為您選擇的問題：</p>
+                <p class="en-text">Based on your game experience, please reflect on and discuss the following questions selected for you with your peers:</p>
+                <div id="discussion-questions" class="mt-4 space-y-4"></div>
+            </div>
+            <div class="text-center mt-6">
+                <button id="restart-series-btn-final" class="bg-sky-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-sky-700 transition-transform transform hover:scale-105">重新開始新系列 <span class="text-sky-200">Restart Series</span></button>
             </div>
         </div>
     </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    const screens = { instruction: document.getElementById('instruction-screen'), scene: document.getElementById('scene-screen'), game: document.getElementById('game-screen'), report: document.getElementById('report-screen'), finalSummary: document.getElementById('final-summary-screen') };
-    const buttons = { acceptInstructions: document.getElementById('accept-instructions-btn'), startGame: document.getElementById('start-game-btn'), submitOffer: document.getElementById('submit-offer-btn'), endNegotiation: document.getElementById('end-negotiation-btn'), viewBatna: document.getElementById('view-batna-btn'), nextRound: document.getElementById('next-round-btn'), viewSummary: document.getElementById('view-summary-btn'), restartSeries: document.getElementById('restart-series-btn'), modalClose: document.getElementById('modal-close-btn') };
+    const screens = { instruction: document.getElementById('instruction-screen'), identity: document.getElementById('identity-screen'), scene: document.getElementById('scene-screen'), game: document.getElementById('game-screen'), report: document.getElementById('report-screen'), finalSummary: document.getElementById('final-summary-screen'), discussion: document.getElementById('discussion-screen') };
+    const buttons = { acceptInstructions: document.getElementById('accept-instructions-btn'), startGame: document.getElementById('start-game-btn'), submitOffer: document.getElementById('submit-offer-btn'), endNegotiation: document.getElementById('end-negotiation-btn'), viewBatna: document.getElementById('view-batna-btn'), nextRound: document.getElementById('next-round-btn'), viewSummary: document.getElementById('view-summary-btn'), goToDiscussion: document.getElementById('go-to-discussion-btn'), restartSeries: document.getElementById('restart-series-btn'), restartSeriesFinal: document.getElementById('restart-series-btn-final'), modalClose: document.getElementById('modal-close-btn') };
+    const identityChoiceBtns = document.querySelectorAll('.identity-choice-btn');
     const inputs = { cost: document.getElementById('cost'), duration: document.getElementById('duration'), warranty: document.getElementById('warranty'), prepayment: document.getElementById('prepayment'), obligation: document.getElementById('obligation') };
     const displays = {
         sceneTitle: document.getElementById('scene-title'), sceneTitleEn: document.getElementById('scene-title-en'), sceneDescription: document.getElementById('scene-description'), sceneDescriptionEn: document.getElementById('scene-description-en'),
@@ -241,11 +278,13 @@ document.addEventListener('DOMContentLoaded', () => {
         timer: document.getElementById('timer'),
         finalScore: document.getElementById('final-score'),
         finalScoreLogic: document.getElementById('final-score-logic'),
+        discussionQuestions: document.getElementById('discussion-questions'),
     };
     
     let gameStateToken = null;
     let timerInterval = null;
     let lastSubmitTimestamp = 0;
+    let coolDownMessage = { zh: '', en: '' };
 
     const OBLIGATION_LEVELS = { 1: { name: '輕度義務', en_name: 'Light' }, 2: { name: '一般義務', en_name: 'General' }, 3: { name: '中度義務', en_name: 'Moderate' }, 4: { name: '重度義務', en_name: 'Heavy' }, 5: { name: '全面義務', en_name: 'Comprehensive' } };
     const OBLIGATION_DEFS = { 
@@ -287,8 +326,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     function hideModal() { if (displays.modal.querySelector('.modal-content')) displays.modal.querySelector('.modal-content').classList.add('scale-95', 'opacity-0'); setTimeout(() => {displays.modal.classList.add('hidden'); displays.modal.classList.remove('flex');}, 300); }
     function updateSliderValue(key, value) {
+        const label = document.querySelector(`label[for="${key}"] span`);
+        if(label) label.innerHTML = `${label.dataset.name} (${label.dataset.enName})`;
+
         let displayValue = value;
-        if (key === 'cost') { displayValue = parseInt(value).toLocaleString(); } 
+        if (key === 'cost' || key === 'prepayment') { displayValue = parseInt(value).toLocaleString(); } 
         else if (key === 'obligation') {
             if (OBLIGATION_LEVELS[value]) {
                 displayValue = `${value} (${OBLIGATION_LEVELS[value].name} / ${OBLIGATION_LEVELS[value].en_name})`;
@@ -339,24 +381,24 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 1000);
     }
     
-    async function init(token = null) {
+    async function init(payload = {}) {
         switchScreen('scene');
         toggleButtonLoading(buttons.startGame, true);
         
-        const data = await apiCall('init', { token });
+        const data = await apiCall('init', payload);
         
         if (data) {
             if(data.isGameOver) {
-                renderFinalSummary(data.gameHistory, data.finalScore);
+                renderFinalSummary(data.gameHistory, data.finalScore, data.discussionQuestions);
                 return;
             }
             gameStateToken = data.token;
+            coolDownMessage = data.coolDownMessage;
 
-            // Populate Scene Screen
             displays.sceneTitle.textContent = data.scene.title;
             displays.sceneTitleEn.textContent = data.scene.en_title;
             displays.sceneDescription.innerHTML = data.scene.desc;
-            displays.sceneDescriptionEn.innerHTML = data.scene.en_desc;
+            displays.sceneDescriptionEn.innerHTML = `<p class="en-text">${data.scene.en_desc}</p>`;
             displays.sceneUserParams.innerHTML = Object.values(data.scene.userParams).map(p => `<li><strong>${p.name} (${p.en_name})</strong>: 期望 <span class="text-green-600">${p.expect.toLocaleString()}</span> | 底線 <span class="text-red-600">${p.reserve.toLocaleString()}</span></li>`).join('');
             displays.sceneUserBatna.innerHTML = data.scene.userBatna;
 
@@ -366,6 +408,13 @@ document.addEventListener('DOMContentLoaded', () => {
             
             for (const key in data.initialOffer) {
                 const param = data.sliderConfig[key];
+                const sceneParam = data.scene.params.user[key];
+                const label = document.querySelector(`label[for="${key}"] span`);
+                if (label) {
+                    label.innerHTML = `${sceneParam.name} (${sceneParam.en_name})`;
+                    label.dataset.name = sceneParam.name;
+                    label.dataset.enName = sceneParam.en_name;
+                }
                 if (inputs[key]) {
                     inputs[key].min = param.min;
                     inputs[key].max = param.max;
@@ -392,7 +441,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (now - lastSubmitTimestamp < 30000) {
             showModal(
                 '提交過於頻繁！', 'Submission Too Frequent!',
-                `<p>你家不是開銀行的，請你仔細思考後再提出方案！</p><p class="en-text">Your family doesn't own a bank, please think carefully before making another offer!</p><p class="mt-2 text-sm text-amber-700">（此行為已被記錄為一次「非理性思考」）<br><span class="en-text">(This action has been recorded as one "irrational move")</span></p>`
+                `<p>${coolDownMessage.zh}</p><p class="en-text">${coolDownMessage.en}</p><p class="mt-2 text-sm text-amber-700">（此行為已被記錄為一次「非理性思考」）<br><span class="en-text">(This action has been recorded as one "irrational move")</span></p>`
             );
             const data = await apiCall('irrationalMove', { token: gameStateToken });
             if (data) gameStateToken = data.token;
@@ -401,7 +450,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         lastSubmitTimestamp = now;
         toggleButtonLoading(buttons.submitOffer, true);
-        const offer = Object.fromEntries(Object.entries(inputs).map(([key, input]) => [key, parseInt(input.value)]));
+        const offer = Object.fromEntries(Object.entries(inputs).map(([key, input]) => [key, parseFloat(input.value)]));
         const data = await apiCall('submit', { token: gameStateToken, offer });
         if (data) {
             gameStateToken = data.token;
@@ -431,7 +480,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     async function handleEndNegotiation() {
         stopTimer();
-        const offer = Object.fromEntries(Object.entries(inputs).map(([key, input]) => [key, parseInt(input.value)]));
+        const offer = Object.fromEntries(Object.entries(inputs).map(([key, input]) => [key, parseFloat(input.value)]));
         const data = await apiCall('end', { token: gameStateToken, offer });
         if (data) {
              gameStateToken = data.token;
@@ -458,7 +507,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (data.isGameOver) {
             buttons.nextRound.classList.add('hidden');
             buttons.viewSummary.classList.remove('hidden');
-            buttons.viewSummary.onclick = () => renderFinalSummary(data.gameHistory, data.finalScore);
+            buttons.viewSummary.onclick = () => renderFinalSummary(data.gameHistory, data.finalScore, data.discussionQuestions);
         } else {
             buttons.nextRound.classList.remove('hidden');
             buttons.viewSummary.classList.add('hidden');
@@ -467,7 +516,7 @@ document.addEventListener('DOMContentLoaded', () => {
         switchScreen('report');
     }
 
-    function renderFinalSummary(gameHistory, finalScore) {
+    function renderFinalSummary(gameHistory, finalScore, discussionQuestions) {
         displays.finalScore.textContent = `${finalScore.score} / 100`;
         displays.finalScoreLogic.innerHTML = finalScore.logic;
         displays.finalSummaryTableBody.innerHTML = gameHistory.map(round => {
@@ -493,19 +542,37 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td class="p-3">${aiScore}</td>
             </tr>`;
         }).join('');
+        buttons.goToDiscussion.onclick = () => renderDiscussion(discussionQuestions);
         switchScreen('finalSummary');
     }
 
-    buttons.acceptInstructions.addEventListener('click', () => init(null));
+    function renderDiscussion(questions) {
+        displays.discussionQuestions.innerHTML = questions.map((q, i) => `
+            <div class="p-4 bg-slate-50 rounded-lg">
+                <p class="font-semibold text-slate-800">${i + 1}. ${q.zh}</p>
+                <p class="en-text text-slate-600">${q.en}</p>
+            </div>
+        `).join('');
+        switchScreen('discussion');
+    }
+
+    buttons.acceptInstructions.addEventListener('click', () => switchScreen('identity'));
+    identityChoiceBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const identity = btn.dataset.identity;
+            init({ identity });
+        });
+    });
     buttons.startGame.addEventListener('click', () => { 
-        lastSubmitTimestamp = Date.now(); // Reset timestamp for the new round
+        lastSubmitTimestamp = Date.now();
         switchScreen('game'); 
         startTimer();
     });
     buttons.submitOffer.addEventListener('click', handleSubmitOffer);
     buttons.endNegotiation.addEventListener('click', handleEndNegotiation);
-    buttons.nextRound.addEventListener('click', () => init(gameStateToken));
-    buttons.restartSeries.addEventListener('click', () => init(null));
+    buttons.nextRound.addEventListener('click', () => init({ token: gameStateToken }));
+    buttons.restartSeries.addEventListener('click', () => switchScreen('instruction'));
+    buttons.restartSeriesFinal.addEventListener('click', () => switchScreen('instruction'));
     buttons.viewBatna.addEventListener('click', () => {
         apiCall('viewBatna', { token: gameStateToken }).then(data => { if (data) gameStateToken = data.token; });
         const batnaHTML = `<p class="font-bold">您的最佳替代方案是一個住宅項目合約，其價值可量化為：</p><p class="en-text">Your best alternative is a residential project contract, quantifiable as:</p><ul class="list-disc list-inside mt-2 space-y-1 text-slate-700"><li><strong>報價 (Price):</strong> 9,500,000 元</li><li><strong>工期 (Duration):</strong> 300 天</li><li><strong>保修期 (Warranty):</strong> 2 年</li><li><strong>預付款 (Prepayment):</strong> 15%</li><li><strong>附加義務 (Obligation):</strong> 等級 2 (一般義務 / General)</li></ul><p class="mt-4 text-sm bg-amber-100 p-2 rounded">當前談判的條件若劣於此方案，您應當選擇放棄。<br><span class="text-amber-700">If the current negotiation terms are worse than this alternative, you should walk away.</span></p>`;
@@ -513,6 +580,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     buttons.modalClose.addEventListener('click', hideModal);
     Object.entries(inputs).forEach(([key, input]) => { if (input) input.addEventListener('input', (e) => updateSliderValue(key, e.target.value)); });
+
 });
 </script>
 
