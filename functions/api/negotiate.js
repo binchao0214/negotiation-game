@@ -49,8 +49,8 @@ const GAME_THEMES = {
             practiceAiOpponentName: '組員 (AI) 回應', en_practiceAiOpponentName: 'Groupmate (AI) Response',
             officialAiOpponentName: 'HR (AI) 回應', en_officialAiOpponentName: 'HR (AI) Response',
             obligationTitle: '專案主導權等級定義', en_obligationTitle: 'Project Autonomy Level Definitions',
-            successModalTitle: '達成共識！', en_successModalTitle: 'Agreement Reached!',
-            successModalText: '合作愉快！', en_successModalText: 'Pleasure working with you!',
+            successModalTitle: '談成了！', en_successModalTitle: 'Deal!',
+            successModalText: '恭喜你，被項目套牢了！', en_successModalText: 'Congratulations, you\'re locked into the project!',
             reportTableHead: '<tr><th class="p-3">參數<p class="en-text font-normal">Parameter</p></th><th class="p-3 text-sky-600">您的最終方案<p class="en-text font-normal">Your Final Offer</p></th><th class="p-3 text-green-600">您的期望<p class="en-text font-normal">Your Expectation</p></th><th class="p-3 text-red-600">您的底線<p class="en-text font-normal">Your Reserve</p></th><th class="p-3 text-red-600">對方底線<p class="en-text font-normal">Opponent\'s Reserve</p></th><th class="p-3 text-green-600">對方期望<p class="en-text font-normal">Opponent\'s Expectation</p></th></tr>',
             finalSummaryTableHead: '<tr><th class="p-3">HR 談判風格<p class="en-text font-normal">Style</p></th><th class="p-3">結果<p class="en-text font-normal">Result</p></th><th class="p-3">Offer 內容<p class="en-text font-normal">Offer Terms</p></th><th class="p-3">對話輪次<p class="en-text font-normal">Rounds</p></th><th class="p-3">BATNA 查看<p class="en-text font-normal">BATNA Views</p></th><th class="p-3">過度讓步<p class="en-text font-normal">Over-concessions</p></th><th class="p-3">非理性思考<p class="en-text font-normal">Irrational Moves</p></th><th class="p-3">您的滿意度<p class="en-text font-normal">Your Score</p></th><th class="p-3">HR 滿意度<p class="en-text font-normal">HR\'s Score</p></th></tr>',
             DISCUSSION_QUESTIONS: `
@@ -82,7 +82,7 @@ const GAME_THEMES = {
             ai: { cost: { expect: 1100000, reserve: 1400000 }, duration:   { expect: 40,      reserve: 55 }, warranty:   { expect: 3,       reserve: 1 }, prepayment: { expect: 10,      reserve: 25 }, obligation: { expect: 3,       reserve: 1 } }
         },
         PRACTICE_USER_BATNA: { cost: 1350000, duration: 50, warranty: 1, prepayment: 20, obligation: 1 },
-        PRACTICE_USER_BATNA_HTML: `<p class="font-bold">您的最佳替代方案是接受另一個辦公室裝修案，其價值可量化為：</p><p class="en-text">Your best alternative is to accept another office renovation project, quantifiable as:</p><ul class="list-disc list-inside mt-2 space-y-1 text-slate-700"><li><strong>總造價 (Total Cost):</strong> 1,350,000 元</li><li><strong>工期 (Duration):</strong> 50 天</li><li><strong>保修期 (Warranty):</strong> 1 年</li></ul><p class="mt-4 text-sm bg-amber-100 p-2 rounded">若當前談判的條件劣於此方案，您應當選擇放棄。<br><span class="text-amber-700">If the current negotiation terms are worse than this alternative, you should walk away.</span></p>`,
+        PRACTICE_USER_BATNA_HTML: `<p class="font-bold">您的最佳替代方案是接受另一個辦公室裝修案，其價值可量化為：</p><p class="en-text">Your best alternative is to accept another office renovation project, quantifiable as:</p><ul class="list-disc list-inside mt-2 space-y-1 text-slate-700"><li><strong>總造價 (Total Cost):</strong> 1,350,000 元</li><li><strong>工期 (Duration):</strong> 50 天</li><li><strong>保修期 (Warranty):</strong> 1 年</li><li><strong>預付款 (Prepayment):</strong> 20%</li><li><strong>附加義務 (Obligation):</strong> 等級 1 (輕度義務)</li></ul><p class="mt-4 text-sm bg-amber-100 p-2 rounded">若當前談判的條件劣於此方案，您應當選擇放棄。<br><span class="text-amber-700">If the current negotiation terms are worse than this alternative, you should walk away.</span></p>`,
         BASE_PARAMS: {
             user: {
                 cost:       { expect: 10500000, reserve: 9000000, name: '總造價', en_name: 'Total Cost', unit: '元', format: 'currency'},
@@ -94,7 +94,7 @@ const GAME_THEMES = {
             ai: { cost: { expect: 8500000,  reserve: 10000000 }, duration:   { expect: 210,      reserve: 270 }, warranty:   { expect: 5,        reserve: 3 }, prepayment: { expect: 10,       reserve: 20 }, obligation: { expect: 5,        reserve: 3 } }
         },
         USER_BATNA: { cost: 9500000, duration: 300, warranty: 2, prepayment: 15, obligation: 2 },
-        OFFICIAL_USER_BATNA_HTML: `<p class="font-bold">您的最佳替代方案是接受另一個住宅項目合約，其價值可量化為：</p><p class="en-text">Your best alternative is a residential project contract, quantifiable as:</p><ul class="list-disc list-inside mt-2 space-y-1 text-slate-700"><li><strong>報價 (Price):</strong> 9,500,000 元</li><li><strong>工期 (Duration):</strong> 300 天</li><li><strong>保修期 (Warranty):</strong> 2 年</li></ul><p class="mt-4 text-sm bg-amber-100 p-2 rounded">當前談判的條件若劣於此方案，您應當選擇放棄。<br><span class="text-amber-700">If the current negotiation terms are worse than this alternative, you should walk away.</span></p>`,
+        OFFICIAL_USER_BATNA_HTML: `<p class="font-bold">您的最佳替代方案是接受另一個住宅項目合約，其價值可量化為：</p><p class="en-text">Your best alternative is a residential project contract, quantifiable as:</p><ul class="list-disc list-inside mt-2 space-y-1 text-slate-700"><li><strong>總造價 (Price):</strong> 9,500,000 元</li><li><strong>工期 (Duration):</strong> 300 天</li><li><strong>保修期 (Warranty):</strong> 2 年</li><li><strong>預付款 (Prepayment):</strong> 15%</li><li><strong>附加義務 (Obligation):</strong> 等級 2 (一般義務)</li></ul><p class="mt-4 text-sm bg-amber-100 p-2 rounded">當前談判的條件若劣於此方案，您應當選擇放棄。<br><span class="text-amber-700">If the current negotiation terms are worse than this alternative, you should walk away.</span></p>`,
         OBLIGATION_DEFS: { 
             1: '配合標準審計流程，提供常規進度報告。<p class="en-text">Cooperate with standard audit procedures, provide regular progress reports.</p>', 
             2: '除標準報告外，需提供額外的專項報告（如環保、安全）。<p class="en-text">In addition to standard reports, provide extra special reports (e.g., environmental, safety).</p>', 
@@ -117,8 +117,8 @@ const GAME_THEMES = {
             practiceAiOpponentName: '業主 (AI) 回應', en_practiceAiOpponentName: 'Client (AI) Response',
             officialAiOpponentName: '業主 (AI) 回應', en_officialAiOpponentName: 'Client (AI) Response',
             obligationTitle: '附加義務等級定義', en_obligationTitle: 'Obligation Level Definitions',
-            successModalTitle: '成交！', en_successModalTitle: 'Deal!',
-            successModalText: '這工程有勞你了！', en_successModalText: 'We\'re counting on you for this project!',
+            successModalTitle: '談成了！', en_successModalTitle: 'Deal!',
+            successModalText: '恭喜你，被項目套牢了！', en_successModalText: 'Congratulations, you\'re locked into the project!',
             reportTableHead: '<tr><th class="p-3">參數<p class="en-text font-normal">Parameter</p></th><th class="p-3 text-sky-600">您的最終方案<p class="en-text font-normal">Your Final Offer</p></th><th class="p-3 text-green-600">您的期望<p class="en-text font-normal">Your Expectation</p></th><th class="p-3 text-red-600">您的底線<p class="en-text font-normal">Your Reserve</p></th><th class="p-3 text-red-600">業主底線<p class="en-text font-normal">Client\'s Reserve</p></th><th class="p-3 text-green-600">業主期望<p class="en-text font-normal">Client\'s Expectation</p></th></tr>',
             finalSummaryTableHead: '<tr><th class="p-3">談判風格<p class="en-text font-normal">Style</p></th><th class="p-3">結果<p class="en-text font-normal">Result</p></th><th class="p-3">成交方案<p class="en-text font-normal">Deal Terms</p></th><th class="p-3">對話輪次<p class="en-text font-normal">Rounds</p></th><th class="p-3">BATNA 查看<p class="en-text font-normal">BATNA Views</p></th><th class="p-3">過度讓步<p class="en-text font-normal">Over-concessions</p></th><th class="p-3">非理性思考<p class="en-text font-normal">Irrational Moves</p></th><th class="p-3">您的滿意度<p class="en-text font-normal">Your Score</p></th><th class="p-3">業主滿意度<p class="en-text font-normal">Client\'s Score</p></th></tr>',
             DISCUSSION_QUESTIONS: `
