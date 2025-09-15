@@ -282,6 +282,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(errorData.details || `Server Error: ${response.status}`);
             }
             const data = await response.json();
+            if (data.error) {
+                throw new Error(data.details || data.error);
+            }
             return data;
         } catch (error) {
             console.error('API call failed:', error);
@@ -308,7 +311,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 descElement.innerHTML = `等級 ${value}: ${obligationDefs[value]}`;
             }
         } else {
-             displayValue = `${parseFloat(value).toLocaleString()}${paramConfig.unit_en ? ` ${paramConfig.unit_en}` : (paramConfig.unit || '')}`;
+             displayValue = `${parseFloat(value).toLocaleString()} ${(paramConfig.unit || '')}`;
         }
         
         const valueDisplay = document.getElementById(`${key}-value`);
