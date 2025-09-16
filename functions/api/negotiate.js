@@ -33,11 +33,11 @@ const GAME_THEMES = {
             5: '領導子專案：主導一個小型內部專案或大型專案的子方向。<p class="en-text">Sub-project Lead: Lead a small internal project or a sub-direction of a larger project.</p>'
         },
         AI_STYLES: {
-            tough:       { name: '強悍型', en_name: 'Tough', desc: 'HR 尋求完美匹配。成交條件：所有 5 個談判項必須全部落在雙方的成交區間 (ZOPA) 內。', en_desc: 'The HR seeks a perfect match. Deal Condition: All 5 negotiation items must fall within the ZOPA.' },
-            horseTrader: { name: '交換型', en_name: 'Horse-Trader', desc: 'HR 注重多數共識。成交條件：至少有 4 個談判項落在雙方的成交區間 (ZOPA) 內。', en_desc: 'The HR focuses on majority consensus. Deal Condition: At least 4 negotiation items must fall within the ZOPA.' },
-            fair:        { name: '公平型', en_name: 'Fair', desc: 'HR 尋求整體平衡。成交條件：至少有 3 個談判項落在雙方的成交區間 (ZOPA) 內。', en_desc: 'The HR seeks an overall balance. Deal Condition: At least 3 negotiation items must fall within the ZOPA.' },
-            key:         { name: '關鍵變量型', en_name: 'Key-Variable', desc: 'HR 對核心利益寸步不讓。成交條件：至少有 3 個談判項落在 ZOPA 內，且其中必須包含「實習月薪」和「實習時長」。', en_desc: 'The HR is uncompromising on core interests. Deal Condition: At least 3 items in ZOPA, which must include Salary and Duration.' },
-            accommodating: { name: '隨和型', en_name: 'Accommodating', desc: 'HR 態度開放，容易達成。成交條件：至少有 2 個談判項落在雙方的成交區間 (ZOPA) 內。', en_desc: 'The HR is open and easy to deal with. Deal Condition: At least 2 negotiation items must fall within the ZOPA.' }
+            accommodating: { name: '容忍型', en_name: 'Accommodating', desc: '極度重視關係和諧，傾向於退讓，避免衝突，常以滿足對方需求為先。', en_desc: 'Highly values relationship harmony, tends to concede and avoid conflict, often prioritizing the other party\'s needs.', question: '您最希望通過這次谈判实现什么核心目标？', en_question: 'What is the core goal you hope to achieve through this negotiation?' },
+            avoiding:      { name: '回避型', en_name: 'Avoiding', desc: '對衝突敏感，傾向於回避或推遲決策，議題擱置，既不積極爭取也不主动让步。', en_desc: 'Sensitive to conflict, tends to avoid or postpone decisions, shelves issues, neither actively pursues nor concedes.', question: '目前我們在哪些方面還存在未解決的問題或信息盲区？', en_question: 'What unresolved issues or information gaps do we currently have?' },
+            compromising:  { name: '折中型', en_name: 'Compromising', desc: '既有讓步也有爭取，尋求“你中有我、我中有你”的中间方案，重效率轻关系或结果深度。', en_desc: 'Both concedes and contends, seeks a middle-ground solution, values efficiency over relationship or depth of outcome.', question: '在現有框架下，還有哪些可行方案能兼顧双方利益？', en_question: 'Within the current framework, what other viable options could satisfy both parties?' },
+            collaborating: { name: '合作型', en_name: 'Collaborating', desc: '高度重視結果和關係，主动分享信息，積極探索双赢解决方案，但议题深入时可能态度强硬。', en_desc: 'Highly values both outcomes and relationships, actively shares information, explores win-win solutions, but can be assertive on deep issues.', question: '我们目前有什么资源或限制？基于此还有哪些创新解决思路？', en_question: 'What resources or constraints do we have? Based on this, what innovative solutions can we devise?' },
+            competing:     { name: '竞争型', en_name: 'Competing', desc: '强势、目标导向，善于施压和谈判技巧，倾向于以最大化自身利益为目的，易与人冲突。', en_desc: 'Assertive and goal-oriented, skilled at applying pressure and tactics, aims to maximize self-interest, prone to conflict.', question: '如果采用这个条件，您是否能够立即推进并承担相应风险？', en_question: 'If we agree to this term, can you proceed immediately and assume the corresponding risks?' }
         },
         TEXT_SNIPPETS: {
             practiceSceneTitle: '練習輪：小組報告分工', en_practiceSceneTitle: 'Practice Round: Group Project',
@@ -62,7 +62,7 @@ const GAME_THEMES = {
                 <h4 class="mt-4"><span class="text-sky-600">个体化差异</span>：策略复盘</h4>
                 <ol class="list-decimal list-inside space-y-2">
                     <li>回顾你得分最高或最低的一轮谈判，你认为成功的关键或失败的原因是什么？你的开价策略（先高后低，还是接近底线）是如何影响整个谈判过程的？</li>
-                    <li>面对五种不同风格的对手（强悍型、交换型、公平型、关键变量型、随和型），你的应对策略有何不同？哪一种风格的对手让你觉得最难处理，为什么？</li>
+                    <li>面对五种不同风格的对手（容忍型、回避型、折中型、合作型、竞争型），你的应对策略有何不同？哪一种风格的对手让你觉得最难处理，为什么？</li>
                 </ol>
                 <h4 class="mt-4"><span class="text-sky-600">启发与应用</span>：延伸思考</h4>
                 <ol class="list-decimal list-inside space-y-2">
@@ -103,11 +103,11 @@ const GAME_THEMES = {
             5: '需承擔項目範圍內全部未知地質條件、以及因極端天氣導致的工期延誤風險。<p class="en-text">Assume risks for all unknown geological conditions and project delays due to extreme weather.</p>'
         },
         AI_STYLES: {
-            tough:       { name: '強悍型',       en_name: 'Tough',         desc: '業主尋求完美匹配。成交條件：所有 5 個談判項必須全部落在雙方的成交區間 (ZOPA) 內。', en_desc: 'The client seeks a perfect match. Deal Condition: All 5 negotiation items must fall within the ZOPA.' },
-            horseTrader: { name: '交換型',       en_name: 'Horse-Trader',  desc: '業主注重多數共識。成交條件：至少有 4 個談判項落在雙方的成交區間 (ZOPA) 內。', en_desc: 'The client focuses on majority consensus. Deal Condition: At least 4 negotiation items must fall within the ZOPA.' },
-            fair:        { name: '公平型',       en_name: 'Fair',          desc: '業主尋求整體平衡。成交條件：至少有 3 個談判項落在雙方的成交區間 (ZOPA) 內。', en_desc: 'The client seeks an overall balance. Deal Condition: At least 3 negotiation items must fall within the ZOPA.' },
-            key:         { name: '關鍵變量型',   en_name: 'Key-Variable',  desc: '業主對核心利益寸步不讓。成交條件：至少有 3 個談判項落在 ZOPA 內，且其中必須包含「總造價」和「工期」。', en_desc: 'The client is uncompromising on core interests. Deal Condition: At least 3 items in ZOPA, which must include Total Cost and Duration.' },
-            accommodating: { name: '隨和型',     en_name: 'Accommodating', desc: '業主態度開放，容易達成。成交條件：至少有 2 個談判項落在雙方的成交區間 (ZOPA) 內。', en_desc: 'The client is open and easy to deal with. Deal Condition: At least 2 negotiation items must fall within the ZOPA.' }
+            accommodating:{ name: '容忍型', en_name: 'Accommodating', desc: '極度重視關係和諧，傾向於退讓，避免衝突，常以滿足對方需求為先。', en_desc: 'Highly values relationship harmony, tends to concede and avoid conflict, often prioritizing the other party\'s needs.', question: '您最希望通過這次谈判实现什么核心目标？', en_question: 'What is the core goal you hope to achieve through this negotiation?' },
+            avoiding:     { name: '回避型', en_name: 'Avoiding', desc: '對衝突敏感，傾向於回避或推遲決策，議題擱置，既不積極爭取也不主动让步。', en_desc: 'Sensitive to conflict, tends to avoid or postpone decisions, shelves issues, neither actively pursues nor concedes.', question: '目前我們在哪些方面還存在未解決的問題或信息盲区？', en_question: 'What unresolved issues or information gaps do we currently have?' },
+            compromising: { name: '折中型', en_name: 'Compromising', desc: '既有讓步也有爭取，尋求“你中有我、我中有你”的中间方案，重效率轻关系或结果深度。', en_desc: 'Both concedes and contends, seeks a middle-ground solution, values efficiency over relationship or depth of outcome.', question: '在現有框架下，還有哪些可行方案能兼顧双方利益？', en_question: 'Within the current framework, what other viable options could satisfy both parties?' },
+            collaborating:{ name: '合作型', en_name: 'Collaborating', desc: '高度重視結果和關係，主动分享信息，積極探索双赢解决方案，但议题深入时可能态度强硬。', en_desc: 'Highly values both outcomes and relationships, actively shares information, explores win-win solutions, but can be assertive on deep issues.', question: '我们目前有什么资源或限制？基于此还有哪些创新解决思路？', en_question: 'What resources or constraints do we have? Based on this, what innovative solutions can we devise?' },
+            competing:    { name: '竞争型', en_name: 'Competing', desc: '强势、目标导向，善于施压和谈判技巧，倾向于以最大化自身利益为目的，易与人冲突。', en_desc: 'Assertive and goal-oriented, skilled at applying pressure and tactics, aims to maximize self-interest, prone to conflict.', question: '如果采用这个条件，您是否能够立即推进并承担相应风险？', en_question: 'If we agree to this term, can you proceed immediately and assume the corresponding risks?' }
         },
         TEXT_SNIPPETS: {
             practiceSceneTitle: '練習輪：辦公室裝修', en_practiceSceneTitle: 'Practice Round: Office Renovation',
@@ -130,7 +130,7 @@ const GAME_THEMES = {
                 <h4 class="mt-4"><span class="text-emerald-600">个体化差异</span>：策略复盘</h4>
                 <ol class="list-decimal list-inside space-y-2">
                     <li>回顾你得分最高或最低的一轮谈判，你认为成功的关键或失败的原因是什么？你的开价策略（先高后低，还是接近底线）是如何影响整个谈判过程的？</li>
-                    <li>面对五种不同风格的对手（强悍型、交换型、公平型、关键变量型、随和型），你的应对策略有何不同？哪一种风格的对手让你觉得最难处理，为什么？</li>
+                    <li>面对五种不同风格的对手（容忍型、回避型、折中型、合作型、竞争型），你的应对策略有何不同？哪一种风格的对手让你觉得最难处理，为什么？</li>
                 </ol>
                 <h4 class="mt-4"><span class="text-emerald-600">启发与应用</span>：延伸思考</h4>
                 <ol class="list-decimal list-inside space-y-2">
@@ -145,7 +145,7 @@ function encodeState(state) { try { return btoa(unescape(encodeURIComponent(JSON
 function decodeState(token) { try { return JSON.parse(decodeURIComponent(escape(atob(token)))); } catch (e) { console.error('Decoding failed:', e); return null; } }
 
 function generateDynamicParams(styleKey, baseAiParams) {
-    const flexibilityFactors = { tough: 0.4, horseTrader: 0.6, fair: 0.8, key: 0.7, accommodating: 1.0 };
+    const flexibilityFactors = { accommodating: 1.0, avoiding: 0.6, compromising: 0.8, collaborating: 0.7, competing: 0.4 };
     const newAiParams = JSON.parse(JSON.stringify(baseAiParams));
     const factor = flexibilityFactors[styleKey] || 0.8;
     for (const key in newAiParams) {
@@ -176,8 +176,8 @@ function isWithinZOPA(key, value, userParams, aiParams) {
 }
 
 function checkDealCondition(offer, gameState) {
-    const { theme } = gameState;
     const { aiStyle, aiParams, isPractice } = gameState.currentRound;
+    const { theme } = gameState;
     const THEME_DATA = GAME_THEMES[theme];
     const userParams = isPractice ? THEME_DATA.PRACTICE_PARAMS.user : THEME_DATA.BASE_PARAMS.user;
     
@@ -185,16 +185,14 @@ function checkDealCondition(offer, gameState) {
     for (const key in offer) { zopaStatus[key] = isWithinZOPA(key, offer[key], userParams, aiParams); }
     const zopaCount = Object.values(zopaStatus).filter(Boolean).length;
     
+    // Simplified deal conditions for new styles
     switch (aiStyle.key) {
-        case 'tough': return zopaCount >= Object.keys(offer).length;
-        case 'horseTrader': return zopaCount >= Object.keys(offer).length - 1;
-        case 'fair': return zopaCount >= 3;
-        case 'key': 
-            if (theme === 'student') return zopaCount >= 3 && zopaStatus.salary && zopaStatus.duration;
-            if (theme === 'contractor') return zopaCount >= 3 && zopaStatus.cost && zopaStatus.duration;
-            return zopaCount >=3;
+        case 'competing': return zopaCount >= Object.keys(offer).length;
+        case 'collaborating': return zopaCount >= Object.keys(offer).length -1;
+        case 'compromising': return zopaCount >= 3;
         case 'accommodating': return zopaCount >= 2;
-        default: return false;
+        case 'avoiding': return zopaCount >= 1; // Avoiding is easy to deal with if pushed
+        default: return zopaCount >= 3;
     }
 }
 
@@ -213,7 +211,7 @@ function calculateFinalScore(gameHistory) {
 
 function generateAiResponse(offer, gameState) {
     const { theme } = gameState;
-    const { aiParams, isPractice } = gameState.currentRound;
+    const { aiParams, isPractice, aiStyle } = gameState.currentRound;
     const THEME_DATA = GAME_THEMES[theme];
     const userParams = isPractice ? THEME_DATA.PRACTICE_PARAMS.user : THEME_DATA.BASE_PARAMS.user;
 
@@ -225,41 +223,16 @@ function generateAiResponse(offer, gameState) {
     }
 
     if (painPoints.length === 0) { 
-        return isPractice 
-            ? `嗯，你提的這個方案我看了一下，感覺可以接受，那我們就這麼定了？<p class="en-text">Hmm, I looked at the plan you proposed. It seems acceptable. Should we finalize it?</p>`
-            : `這個方案看起來有誠意，我們正在接近達成共識。但在總體利益上，我方還需要再評估一下，才能完全同意。<p class="en-text">This offer shows sincerity, and we are getting close to a consensus. However, I need to re-evaluate the overall benefits for our side before I can fully agree.</p>`; 
+        return `這個方案看起來有誠意，我們正在接近達成共識。<p class="en-text">This offer shows sincerity, and we are getting close to a consensus.</p><p class="mt-2 font-semibold">${aiStyle.question}<br><span class="en-text font-normal">${aiStyle.en_question}</span></p>`; 
     }
     
     const mainPainPoint = painPoints[Math.floor(Math.random() * painPoints.length)];
     const param = userParams[mainPainPoint.key];
     const { name, en_name } = param;
 
-    if (gameState.currentRound.lastPainPoint === mainPainPoint.key) { 
-        gameState.currentRound.consecutivePainPointCount = (gameState.currentRound.consecutivePainPointCount || 1) + 1;
-    } else { 
-        gameState.currentRound.lastPainPoint = mainPainPoint.key; 
-        gameState.currentRound.consecutivePainPointCount = 1; 
-    }
-    
-    if (gameState.currentRound.consecutivePainPointCount >= 2) {
-        return `我們似乎在<strong>${name}</strong>上卡關了。這個條件對我們來說確實是個障礙，您能否在其他方面做些讓步來平衡一下？<p class="en-text">It seems we're stuck on the <strong>${en_name}</strong>. This term is a real obstacle for us. Could you perhaps make a concession elsewhere to balance it out?</p>`;
-    }
-    
-    const studentResponses = {
-        default: [ 
-            `關於<strong>${name}</strong>，我覺得 ${mainPainPoint.userValue}${param.unit || ''} 對我來說有點困難，我這學期課業壓力比較大。<p class="en-text">Regarding the <strong>${en_name}</strong>, I feel that ${mainPainPoint.userValue}${param.unit || ''} is a bit difficult for me. I have a heavy workload this semester.</p>`, 
-            `我不太擅長<strong>${name}</strong>這部分耶，你這邊能多承擔一些嗎？<p class="en-text">I'm not very good at the <strong>${en_name}</strong> part. Could you take on a bit more of that?</p>`
-        ]
-    };
-    const contractorResponses = {
-        cost: [ `關於<strong>${name}</strong>，您提出的 ${mainPainPoint.userValue.toLocaleString()} 元，與我們的預算差距有點大。<p class="en-text">Regarding the <strong>${en_name}</strong>, your offer of ${mainPainPoint.userValue.toLocaleString()} is a bit far from our budget.</p>` ],
-        duration: [ `在<strong>${name}</strong>方面，${mainPainPoint.userValue} 天的時間對我們來說太長了，我們有嚴格的上市時程。<p class="en-text">As for the <strong>${en_name}</strong>, ${mainPainPoint.userValue} days is too long for us; we have a strict go-to-market schedule.</p>` ],
-        default: [ `我們注意到在<strong>${name}</strong>這項，您提出的條件是 ${mainPainPoint.userValue}，這與我方的立場有一定距離。<p class="en-text">We've noted that on <strong>${en_name}</strong>, your proposed term of ${mainPainPoint.userValue} is some distance from our position.</p>` ]
-    };
+    let responseText = `關於<strong>${name}</strong>，您提出的條件與我方的立場有一定距離。<p class="en-text">Regarding the <strong>${en_name}</strong>, your proposed term is some distance from our position.</p>`;
 
-    const responses = theme === 'student' ? studentResponses : contractorResponses;
-    const responseSet = responses[mainPainPoint.key] || responses.default;
-    return responseSet[Math.floor(Math.random() * responseSet.length)];
+    return `${responseText}<p class="mt-2 font-semibold">${aiStyle.question}<br><span class="en-text font-normal">${aiStyle.en_question}</span></p>`;
 }
 
 function calculateSatisfactionScores(finalOffer, gameState) {
@@ -285,14 +258,16 @@ function calculateSatisfactionScores(finalOffer, gameState) {
             official: { salary: '接受的薪資低於備選 Offer', duration: '接受的實習時長長於備選 Offer', stipend: '接受的補貼低於備選 Offer' }
         },
         contractor: {
-            practice: { cost: '總造價低於備選方案', duration: '工期長於備選方案' },
-            official: { cost: '總造價低於備選方案', warranty: '保修期長於備選方案' }
+            practice: { cost: '總造價低於備選方案', duration: '工期長於備選方案', prepayment: '預付款低於備選方案', warranty: '保修期長於備選方案' },
+            official: { cost: '總造價低於備選方案', warranty: '保修期長於備選方案', prepayment: '預付款低於備選方案' }
         }
     };
 
     const checks = isPractice ? batnaChecks[theme].practice : batnaChecks[theme].official;
     for(const key in checks) {
-        checkOverConcession(key, finalOffer[key], batna[key], checks[key]);
+        if(finalOffer[key] !== undefined) {
+             checkOverConcession(key, finalOffer[key], batna[key], checks[key]);
+        }
     }
     
     let aiSatisfaction = 0;
@@ -394,8 +369,9 @@ const handleAction = {
     'init': ({ payload, gameState: decodedState }) => {
         const { theme, token } = payload;
         let gameState = token ? decodeState(token) : null;
-
-        if (!gameState && theme) {
+        
+        const isRestarting = !token && theme;
+        if (isRestarting) {
             gameState = { theme, gameHistory: [], completedStyles: [] };
         } else if (!gameState) {
             return { error: "Invalid state", details: "No token or theme provided for initialization." };
@@ -419,8 +395,8 @@ const handleAction = {
         if (isPractice) {
             currentRound = {
                 isPractice: true,
-                aiStyle: { key: 'fair', ...THEME_DATA.AI_STYLES['fair'] },
-                aiParams: generateDynamicParams('fair', THEME_DATA.PRACTICE_PARAMS.ai),
+                aiStyle: { key: 'compromising', ...THEME_DATA.AI_STYLES['compromising'] },
+                aiParams: generateDynamicParams('compromising', THEME_DATA.PRACTICE_PARAMS.ai),
                 stats: { offers: 0, batnaViews: 0, irrationalMoves: 0 }
             };
             scene = {
@@ -432,8 +408,8 @@ const handleAction = {
                 obligationTitle: THEME_DATA.TEXT_SNIPPETS.obligationTitle, en_obligationTitle: THEME_DATA.TEXT_SNIPPETS.en_obligationTitle,
                 obligationDefs: THEME_DATA.OBLIGATION_DEFS,
             };
-            aiStyleName = '練習對手';
-            aiStyleEnName = 'Practice Opponent';
+            aiStyleName = '練習對手 (折中型)';
+            aiStyleEnName = 'Practice Opponent (Compromising)';
             leakedInfoHTML = '本次為練習輪，部分資訊已揭露以利您熟悉操作。<p class="en-text">This is a practice round. Some information is revealed to help you get familiar with the controls.</p>';
         } else {
             const availableStyles = Object.keys(THEME_DATA.AI_STYLES).filter(k => !gameState.completedStyles.includes(k));
